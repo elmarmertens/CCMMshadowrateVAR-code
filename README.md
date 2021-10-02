@@ -12,7 +12,7 @@ The working paper and supplementary appendices are available here: https://doi.o
 
 ## Directories
 All core scripts are in the main directory. In addition, there are the following subdirectories:
-- `data` for data construction
+- `data` for data construction, use `generateFREDdata.m` to produce input files, named `fredMD*.csv`, as needed by the estimation routines described further below
 - `matlabtoolbox` for general utilities (also available at https://github.com/elmarmertens/em-matlabbox)
 
 The default data file is `fredMD20baa-2021-07.csv` (based on the 2021-07 vintage of FRED-MD, available at https://research.stlouisfed.org/econ/mccracken/fred-databases/).
@@ -23,9 +23,19 @@ The default data file is `fredMD20baa-2021-07.csv` (based on the 2021-07 vintage
 
 - The code requires a recent version of Matlab (we used Matlab versions 2019a-2021a) including access to Matlab’s Statistics and Machine Learning Toolbox. The codes employ `parfor` loops that are executed in parallel when a `parpool` has been created in Matlab, which requires availability of the Matlab Parallel Computing Toolbox (otherwise the loops will be executed sequentially).
 
-- The main directory contains a bash script `gobatch.sh` that can be used to launch a sequence of multiple Matlab scripts from the shell. The Matlab scripts are executed in sequence *and in separate Matlab sessions*. Each Matlab session opens a parallel pool. For example, the shell command `sh gobatch.sh goVAR.m goVARshadowrate.m` will launch a command line session of Matlab, start a parallel pool, and then execute `goVAR.m`; once `goVAR.m` has been executed, the Matlab sessions classes, a new one is reopened for execution of `goVARshadowrate.m`. (The shell script supports as many command line arguments as supported by bash and has been written for use on macOS and Linux.) Alternatively, Matlab scripts can, of course, equally be called interactively on the Matlab GUI’s command line.
+- The main directory contains a bash script `gobatch.sh` that can be used to launch a sequence of multiple Matlab scripts from the shell. The Matlab scripts are executed in sequence *and in separate Matlab sessions*. Each Matlab session opens a parallel pool. For example, the shell command `sh gobatch.sh goVAR.m goVARsimpleshadowrate.m goVARhybridshadowrate.m` will launch a command line session of Matlab, start a parallel pool, and then execute `goVAR.m`; once `goVAR.m` has been executed, the Matlab sessions classes, a new one is reopened for execution of `goVARsimpleshadowrate.m` etc. (The shell script supports as many command line arguments as supported by bash and has been written for use on macOS and Linux.) Alternatively, Matlab scripts can, of course, equally be called interactively on the Matlab GUI’s command line.
 
-- To execute individual models for a given sample, use scripts called `do*.m`. To launch out-of-sample runs for a given model, consider scripts called `go*.m`. After computing the out-of-sample runs each of these `go*.m` scripts stores results for further post-processing in a `*.mat` file. To produce comparison tables of various formats, please use Matlab scripts called `oosEvaluationTables*.m`, which assume that previously stored `*.mat` files are stored in a directory indicated at the beginning of each of theses scripts.  
+- To execute individual models for a given sample, use scripts called `do*.m`. To launch out-of-sample runs for a given model, consider scripts called `go*.m`. After computing the out-of-sample runs each of these `go*.m` scripts stores results for further post-processing in a `*.mat` file. To produce forecst comparison tables, please use Matlab scripts called `oosEvaluationTables.m`, which assume that previously stored `*.mat` files are stored in a directory indicated at the beginning of each of theses scripts.  
 
 ## Model names
-- XXX
+
+To produce quasi-real estiamtes
+- `goVAR.m` for the standard linear VAR
+- `goVARsimpleshadowrate.m` for the simple shadow-rate VAR (as described in the paper)
+- `goVARhybridshadowrate.m` for the hybrid shadow-rate VAR (as described in the paper)
+
+## Other
+- `doVARsimpelshadowrate.m` and `doVARhyridshadowrate.m` provide estimates for a single data sample, with and without imposing the ELB onto the missing-data problem of the shadow-rate sample and producing comparison figures as shown in paper and supplementary appendix
+- `oosEvaluationTables.m` produces forecast comparison tables based on output stored by the `goVAR*shadowrate.m` scripts
+- `showQRTshadow2021.m` produces figures of shadow-rate estimates (full-sample and quasi-real-time) based on output stored by the `goVAR*shadowrate.m` scripts
+- `showPAIchanges.m` produces comparison figures of VAR transition coefficients
