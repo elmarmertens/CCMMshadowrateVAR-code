@@ -56,6 +56,7 @@ function PAI=CTA(Y,X,N,K,~,A_,sqrtht,iV,iVb_prior,PAI,rndStream)
 
 % y_til=Y*A_';
 zdraws = randn(rndStream,K,N);
+Ik       = eye(K);
 for j=1:N
     
     % select coefficients of equation j to remove from the LHS
@@ -63,20 +64,19 @@ for j=1:N
     
     % build model
     lambda=vec(sqrtht(:,j:N));
-    % Y_j=vec(y_til(:,j:N)-X*PAI*A_(j:N,:)')./lambda;
-    Y_j=vec((Y-X*PAI)*A_(j:N,:)')./lambda; % quicker than the preceding line
+    Y_j=vec((Y - X *PAI) * A_(j:N,:)')./lambda; 
     
     X_j=kron(A_(j:N,j),X)./lambda;
     
     % posterior moments
     index=K*(j-1)+1:(K*(j-1)+K);
     iV_post = iV(index,index)  + X_j'*X_j;
-    %     V_post = iV_post\eye(K);
-    %     b_post = V_post*(iVb_prior(index) + X_j'*Y_j);
     [iVchol_post, ispd]  = chol(iV_post, 'lower');
     if ispd == 0
-        Vchol_post      = (iVchol_post \ eye(K))'; % note upper right factor
-        V_post          = Vchol_post * Vchol_post'; % V = inv(L') * inv(L)
+
+        Vchol_post      = (iVchol_post \ Ik)';  % note: Vchol_post used below for constructing draws; hence the transpose
+        V_post          = Vchol_post * Vchol_post'; 
+    
     else % proceed via QR
         
         warning('switching to QR routine')
@@ -87,7 +87,7 @@ for j=1:N
         R = triu(qr(qrM',0))';
     
         iVchol_post = R(1:K,1:K);
-        Vchol_post  = (iVchol_post \ eye(K))'; % upper triangular but OK
+        Vchol_post  = (iVchol_post \ Ik)'; % upper triangular but OK
         V_post      = Vchol_post * Vchol_post';
     end
     
