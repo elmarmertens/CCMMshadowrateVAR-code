@@ -33,11 +33,11 @@ if doTightPrior
 else
     theta=[0.1 0.5 100 2];       % hyperparameters of Minnesota prior:
 end
-% [lambda1 lambda2 int lambda3], int is the
+% [theta1 theta2 int theta3], int is the
 % prior on the intercept.
-% lambda1 is the overall shrinkage, lambda2 the
+% theta1 is the overall shrinkage, theta2 the
 % cross shrinkage and lambda 3 the lag decay
-% (quadratic if =2). Note lambda2~=1 implies
+% (quadratic if =2). Note theta2~=1 implies
 % the prior becomes asymmetric across eqation,
 % so this would not be implementable in the
 % standard conjugate setup.

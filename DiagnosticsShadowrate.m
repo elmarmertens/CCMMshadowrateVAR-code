@@ -68,7 +68,7 @@ function [R,neff,V,W,B] = psrf(varargin)
 %   See also
 %     CPSRF, MPSRF, IPSRF
 
-% Copyright (C) 1999 Simo Särkkä
+% Copyright (C) 1999 Simo Saerkkae
 % Copyright (C) 2003 Aki Vehtari
 %
 % This software is distributed under the GNU General Public
