@@ -5,6 +5,9 @@ clear
 close all
 fclose all;
 
+%#ok<*DATNM>
+%#ok<*DATST>
+
 %% load em toolboxes
 warning('off','MATLAB:handle_graphics:exceptions:SceneNode')
 
@@ -18,7 +21,7 @@ addpath matlabtoolbox/emstatespace/
 
 %% setup
 
-resultsdir = '~/jam/lager/quanticoELBmatfiles2021cum';
+resultsdir = '~/jam/lager/quantico2023logscoresXL';
 
 
 
@@ -27,7 +30,7 @@ showShadowOnly = false;
 doLinearOnly   = false;
 doShadowMean   = false;
 
-for DATALABEL = {'fredMD20baa-2021-07', 'fredMD20baaExYieldBAA-2021-07'}
+for DATALABEL = {'fredMD20-2022-09'} % {'fredMD20-2022-09', 'fredMD20exYield-2022-09'}
     
     datalabel = DATALABEL{:};
     
@@ -35,14 +38,14 @@ for DATALABEL = {'fredMD20baa-2021-07', 'fredMD20baaExYieldBAA-2021-07'}
     % STANDARD
     m = 1;
     models(m).datalabel    = datalabel; %#ok<*SAGROW>
-    models(m).resultlabel  = 'standardVAR-tightBVARshrinkage-p12';
+    models(m).resultlabel  = 'standardVAR-RATSbvarshrinkage-p12';
     models(m).prettylabel  = 'Standard';
     models(m).shortlabel   = 'Standard';
     models(m).fcstType     = 'fcstY';
     
     m = 2;
     models(m).datalabel    = datalabel;
-    models(m).resultlabel  = 'hybridshadowrateVAR-tightBVARshrinkage-p12';
+    models(m).resultlabel  = 'ELBblockhybrid-RATSbvarshrinkage-p12';
     models(m).prettylabel  = 'Hybrid sadow-rate';
     models(m).shortlabel   = 'HybridShadowRateVAR';
     models(m).fcstType     = 'fcstY';
@@ -50,14 +53,14 @@ for DATALABEL = {'fredMD20baa-2021-07', 'fredMD20baaExYieldBAA-2021-07'}
     % SIMPLE SHADOWRATE (SY)
     m = 3;
     models(m).datalabel    = datalabel;
-    models(m).resultlabel  = 'simpleshadowrateVAR-tightBVARshrinkage-p12';
+    models(m).resultlabel  = 'ELBsampling-RATSbvarshrinkage-p12';
     models(m).prettylabel  = 'Simple shadow-rate';
     models(m).shortlabel   = 'SimpleShadowRateVAR';
     models(m).fcstType     = 'fcstY';
     
     
-    %% loop over hybrid and simple shadw-rateVAR
-    for doHybrid = [false true]
+    %% loop over hybrid and simple shadow-rateVAR
+    for doHybrid = true % [false true]
         
         %% parameters
         
@@ -76,10 +79,10 @@ for DATALABEL = {'fredMD20baa-2021-07', 'fredMD20baaExYieldBAA-2021-07'}
         if isdesktop
             wrap = [];
         else
-            titlename = sprintf('oosPlotForecasts2021chartsSHADOWFFR-%s-%s', datalabel, shadowshortlabel);
+            titlename = sprintf('oosPlotForecasts2023chartsSHADOWFFR-%s-%s', datalabel, shadowshortlabel);
             initwrap
         end
-        
+
         %#ok<*UNRCH>
         %% load data
         
@@ -111,10 +114,10 @@ for DATALABEL = {'fredMD20baa-2021-07', 'fredMD20baaExYieldBAA-2021-07'}
         
         %% choose dates to plot
         if isdesktop
-            datechoice = datenum(2021,6,1);
+            datechoice = datenum(2022,8,1);
         else
             % datechoice = sort([datenum(2021,1:6,1) datenum(2020,1:12,1) datenum(2012:2019,10,1), datenum(2009:2019,12,1), datenum(2009:2019,1,1), datenum(2009:2019,6,1)]);
-            datechoice = sort([datenum(2021,1:6,1) datenum(2020,1:12,1)]);
+            datechoice = sort([datenum(2022,1:8,1) datenum(2021,1:12,1) datenum(2020,1:12,1) datenum(2012:2019,10,1), datenum(2009:2019,12,1), datenum(2009:2019,1,1), datenum(2009:2019,6,1)]);
         end
         
         %% loop over forecast origins
@@ -263,7 +266,7 @@ for DATALABEL = {'fredMD20baa-2021-07', 'fredMD20baaExYieldBAA-2021-07'}
             delete(ht)
             wrapthisfigure(thisfig, sprintf('%s-%s-%s-predictivedensity1-%s-WITHLEGEND', ...
                 ncode{thisY}, datalabel, shadowshortlabel, datestr(dates(thisT), 'yyyy-mm')), ...
-                wrap)
+                wrap, [], [], [], [], true)
             
             if doLinearOnly
                 % plot lin only
@@ -297,6 +300,18 @@ for DATALABEL = {'fredMD20baa-2021-07', 'fredMD20baaExYieldBAA-2021-07'}
                     wrap, [], [], [], [], true)
             end
             
+
+            %% tabulate
+            tabname = sprintf('%s-%s-%s-predictivedensity1lin-%s', ncode{thisY}, datalabel, shadowshortlabel, datestr(dates(thisT), 'yyyy-mm'));
+            %             call tabulateFigure(wrap, thisPlotLabel, n, ndxT, thisdateT, theseFcstdates, prettylabel1, prettylabel2, prettylabel3, fcstMid1, fcstMid2, fcstMid3, fcstTails1, fcstTails2, fcstTails3, ncode, ndxCI, setQuantiles)
+
+            labels4table = {sprintf('%s median', 'SR'), sprintf('%s %4.2f\\%%', 'SR', mat0.setQuantiles(1,ndxCI(1))), sprintf('%s %4.2f\\%%', 'SR', mat0.setQuantiles(1,ndxCI(2))), ...
+                sprintf('%s median', 'LIN'), sprintf('%s %4.2f\\%%', 'LIN', mat0.setQuantiles(1,ndxCI(1))), sprintf('%s %4.2f\\%%', 'LIN', mat0.setQuantiles(1,ndxCI(2)))};
+
+            data4table = [shadowmid(:) shadowtails linearmid(:) lineartails]; 
+            writedatatable(wrap, tabname, forecastDates, data4table, labels4table, 'yyyy:mm');
+            writedatatable2tex(wrap, tabname, forecastDates, data4table, labels4table, 'yyyy:mm');
+
         end
         
         
@@ -305,11 +320,9 @@ for DATALABEL = {'fredMD20baa-2021-07', 'fredMD20baaExYieldBAA-2021-07'}
             close all
         end
         finishwrap
+
     end % doHybrid
 end % datalabel
 
 dockAllFigures
 finishscript
-
-
-
