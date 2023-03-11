@@ -21,7 +21,7 @@ clear; close all; clc;
 %% set parameters for VAR and MCMC
 
 
-datalabel           = 'fredMD20baa-2021-07';
+datalabel           = 'fredMD20-2022-09';
 doQuarterly         = false;
 
 samStart            = []; % datenum(1988,12,1);                 % truncate start of sample if desired (leave empty if otherwise)
@@ -205,7 +205,7 @@ box(ax, 'off')
 thesedates = ydates(sam);
 xlim(thesedates([1 end]))
 % xticks([thesedates(1:6:end-1); thesedates(end)])
-xticks([thesedates(1:6:end); thesedates(end)])
+xticks(thesedates(1:6:end))
 datetick('x', 'yyyy:mm', 'keeplimits', 'keepticks')
 wrapthisfigure(this, sprintf('recentdata%s', 'TERMSTRUCTURE'), wrap)
 legend([hFFR h5Y h10Y], 'FFR', '5-year', '10-year')

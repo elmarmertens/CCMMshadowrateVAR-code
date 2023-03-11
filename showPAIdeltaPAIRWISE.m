@@ -9,15 +9,18 @@ addpath matlabtoolbox/emgibbsbox/
 addpath matlabtoolbox/emeconometrics/
 addpath matlabtoolbox/emstatespace/
 
+%#ok<*DATNM>
+%#ok<*DATST>
+
 %% Initial operations
 clear; close all; clc;
 
-datadir = '~/jam/lager/quanticoELBmatfiles2021cum/';
+datadir = '~/jam/lager/quantico2023';
 
-% datalabel = 'fredMD20baa-2021-07';
-datalabel = 'fredMD20baaExYieldBAA-2021-07';
+datalabel = 'fredMD20-2022-09';
+MODELTYPES = {'standardVAR', 'ELBsampling', 'ELBblockhybrid'};
+MODELTYPES = {'ELBblockhybrid'};
 
-MODELTYPES = {'standardVAR', 'simpleshadowrateVAR', 'hybridshadowrateVAR'};
 
 
 modeltype0 = 'standardVAR';
@@ -28,6 +31,7 @@ doTitle  = true;
 doLags        = false;
 doEquations   = false;
 
+doWrap = true;
 %#ok<*NASGU>
 
 maxIntercept  = [];
@@ -38,14 +42,14 @@ maxALL        = [];
 maxEq         = cell(20,1);
 
 %% load model0
-mat0  = matfile(fullfile(datadir, sprintf('%s-%s-tightBVARshrinkage-p12.mat', datalabel, modeltype0)));
+mat0  = matfile(fullfile(datadir, sprintf('%s-%s-RATSbvarshrinkage-p12.mat', datalabel, modeltype0)));
 
 %% loop over models
 for thism =  1 : length(MODELTYPES)
     
     modeltype = MODELTYPES{thism};
     
-    mat   = matfile(fullfile(datadir, sprintf('%s-%s-tightBVARshrinkage-p12.mat', datalabel, modeltype)));
+    mat   = matfile(fullfile(datadir, sprintf('%s-%s-RATSbvarshrinkage-p12.mat', datalabel, modeltype)));
     
     wrap = [];
     titlename = sprintf('PAIsinceGFC0-%s-%s', datalabel, modeltype);
@@ -53,7 +57,9 @@ for thism =  1 : length(MODELTYPES)
         titlename = strcat(titlename, '-median');
     end
     
-    initwrap
+    if doWrap
+        initwrap
+    end
     
     modeltype = strcat(modeltype, '-', datalabel);
     %#ok<*UNRCH>
@@ -202,9 +208,9 @@ for thism =  1 : length(MODELTYPES)
     thesedevs = reshape(abs(PAIdevs(1+(1:N),:,:)), N * N, []);
     
     % find variables with largest devs
-    %     maxdev = max(thesedevs, [], 2);
-    %     [maxdev,ndx] = sort(maxdev, 'desc');
-    %     thesendx = sort(ndx(maxdev > 1.5));
+    maxdev = max(thesedevs, [], 2);
+    [maxdev,ndx] = sort(maxdev, 'desc');
+    thesendx = sort(ndx(maxdev > 1.5));
     
     hb = surf(ydates(T0:end),1:N*N,thesedevs);
     
@@ -214,12 +220,13 @@ for thism =  1 : length(MODELTYPES)
         zlim([0 maxLag1])
     end
     
-    caxis([0 maxRED])
+    clim([0 maxRED])
     
     datetick('x')
     yticks(1:N:N*N)
     ylim([1 N*N])
     yticklabels(Ylabels);
+
     
     xlabel('end of estimation window')
     
@@ -251,7 +258,7 @@ for thism =  1 : length(MODELTYPES)
     else
         zlim([0 maxLagOTHER])
     end
-    caxis([0 maxRED])
+    clim([0 maxRED])
     
     datetick('x')
     yticks(1:N:N*N)
@@ -285,7 +292,7 @@ for thism =  1 : length(MODELTYPES)
                 hb = surf(ydates(T0:end),1:N,squeeze(abs(PAIdevs(ndxlag,n,:))));
                 
                 zlim([0 maxZ])
-                caxis([0 maxRED])
+                clim([0 maxRED])
                 datetick('x')
                 xlabel('end of estimation window')
                 %             ylabel('parameters')
@@ -306,12 +313,16 @@ for thism =  1 : length(MODELTYPES)
                     wrapthisfigure(thisfig, sprintf('PAI-%s-lag%d-%s-WITHTITLE', ncode{n}, lag, modeltype), wrap);
                 end
             end
-            close all
+            if doWrap
+                close all
+            end
         end
     end
     
     %% finish loop
-    close all % dockAllFigures
+    if doWrap
+        close all % dockAllFigures
+    end
     finishwrap
 end
 
