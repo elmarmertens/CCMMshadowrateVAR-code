@@ -1,4 +1,4 @@
-%% Simple shadow-rate VAR of „Forecasting with Shadow-Rate VARs“ 
+%% Shadow-rate VAR of <<Forecasting with Shadow-Rate VARs>>
 % by Carriero, Clark, Marcellino and Mertens (2021)
 % The working paper and supplementary appendices are available here: https://doi.org/10.26509/frbc-wp-202109
 %
@@ -28,13 +28,24 @@ rndStreams  = initRandStreams(Nstreams, [], 0);
 
 %% set parameters for VAR and MCMC
 
-datalabel           = 'fredMD20baa-2021-07';
+datalabel           = 'fredMD20-2022-09';
 doQuarterly         = false;
-doTightPrior        = true;
+doRATSprior         = true;
 MCMCdraws           = 1e3;                % Final number of MCMC draws after burn in
-fcstNdraws          = 10 * MCMCdraws;    % draws sampled from predictive density
-doELBsampling       = true;              % shadowrate sampling if true, otherwise treats fedfunds as missing data
+fcstNdraws          = 10 * MCMCdraws;     % draws sampled from predictive density
+doELBsampling       = true;               % shadowrate sampling if true, otherwise treats fedfunds as missing data
 doPAIactual         = false;
+
+ELBbound    = 0.25;
+
+if doQuarterly
+    p  = 4;
+    np = 4; % number of periods per year, used for calibrating priors
+    datalabel = strcat(datalabel, '-quarterly');
+else
+    p  = 12;
+    np = 12;
+end
 
 % SED-PARAMETERS-HERE
 
@@ -49,16 +60,6 @@ doPlotData          = false;
 
 samStart            = [];                 % truncate start of sample if desired (leave empty if otherwise)
 
-if doQuarterly
-    p  = 4;
-    np = 4; % number of periods per year, used for calibrating priors
-    datalabel = strcat(datalabel, '-quarterly');
-else
-    p  = 12;
-    np = 12;
-end
-
-ELBbound    = 0.25;
 
 
 if doLoMem
@@ -76,11 +77,13 @@ ydates=dum.data(3:end,1);
 ncode=dum.textdata(1,2:end);
 % Transformation codes (data are already transformed)
 tcode  =dum.data(1,2:end);
+
 cumcode=logical(dum.data(2,2:end));
 cumcode(tcode == 5) = 1;
 
 % Data
 data=dum.data(3:end,2:end);
+N = size(data,2);
 
 setShadowYields
 
@@ -92,27 +95,26 @@ Tdata = length(ydates);
 Ylabels = fredMDprettylabel(ncode);
 
 %% process settings
-N = size(data,2);
 Kbvar = N * p + 1; % number of regressors per equation
 K = Kbvar;
 
 if doELBsampling
-    labelELBsampling = 'simpleshadowrateVAR';
+    modellabel = 'ELBsampling';
 else
-    labelELBsampling = 'missingrateVAR';
+    modellabel = 'MISSINGratesampling';
 end
 
 
 if ELBbound ~= 0.25
-    labelELBsampling = strcat(labelELBsampling, sprintf('-ELB%d', ELBbound * 1000));
+    modellabel = strcat(modellabel, sprintf('-ELB%d', ELBbound * 1000));
 end
 
-if doTightPrior
-    labelELBsampling = strcat(labelELBsampling, '-tightBVARshrinkage');
+if doRATSprior
+    modellabel = strcat(modellabel, '-RATSbvarshrinkage');
 end
 
 if doPAIactual
-    labelELBsampling = strcat(labelELBsampling, '-PAIactual');
+    modellabel = strcat(modellabel, '-PAIactual');
 end
 
 
@@ -133,7 +135,7 @@ Njumpoffs = length(Tjumpoffs);
 
 ELBdummy = data(:,ndxSHADOWRATE) <= ELBbound;
 
-startELB    = find(ELBdummy, 1);
+startELB    = find(any(ELBdummy,2), 1);
 elbT0       = startELB - 1 - p;
 % elbT0: first obs prior to missing obs, this is the jump off for the state space
 % note: startELB is counted against the available obs in sample, which include
@@ -142,7 +144,7 @@ elbT0       = startELB - 1 - p;
 % other settings
 
 setQuantiles = [.5, 2.5, 5, normcdf(-1) * 100, 25 , 75,  (1 - normcdf(-1)) * 100, 95, 97.5, 99.5];
-Nquantiles    = length(setQuantiles);
+Nquantiles   = length(setQuantiles);
 fractiles = [normcdf(-1) * 100, 100 - normcdf(-1) * 100];
 ndxCI68   = ismember(setQuantiles, fractiles);
 ndxCI90   = ismember(setQuantiles, [5 95]);
@@ -155,11 +157,14 @@ setMinnesotaMean
 shadowrateVintagesMid   = NaN(length(ydates), Nshadowrates, Njumpoffs);
 shadowrateVintagesTails = NaN(length(ydates), Nshadowrates, 4, Njumpoffs);
 
+missingrateVintagesMid   = NaN(length(ydates), Nshadowrates, Njumpoffs);
+missingrateVintagesTails = NaN(length(ydates), Nshadowrates, 4, Njumpoffs);
 
 %% allocate memory for out-of-sample forecasts
 
 fcstNhorizons     = 24;  % number of steps forecasted (1:fcstNhorizon)
 
+% fcstYdraws        = NaN(N,fcstNhorizons,fcstNdraws,Njumpoffs);
 fcstYrealized     = NaN(N,fcstNhorizons,Njumpoffs);
 fcstYhatRB        = NaN(N,fcstNhorizons,Njumpoffs); % predictive mean (linear RB)
 
@@ -170,6 +175,15 @@ fcstYhaterror     = NaN(N,fcstNhorizons,Njumpoffs);
 fcstYmederror     = NaN(N,fcstNhorizons,Njumpoffs);
 fcstYcrps         = NaN(N,fcstNhorizons,Njumpoffs);
 fcstYquantiles    = NaN(N,fcstNhorizons,Nquantiles, Njumpoffs);
+
+fcstYmvlogscoreDraws = NaN(fcstNdraws,Njumpoffs); % one-step ahead only
+fcstYmvlogscore      = NaN(1,Njumpoffs); % one-step ahead only
+
+fcstYmvlogscoreXdraws = NaN(fcstNdraws,Njumpoffs); % one-step ahead only
+fcstYmvlogscoreX      = NaN(1,Njumpoffs); % one-step ahead only
+fcstYmvlogscoreIdraws = NaN(fcstNdraws,Njumpoffs); % one-step ahead only
+fcstYmvlogscoreI      = NaN(1,Njumpoffs); % one-step ahead only
+
 
 % cumulated forecasts
 fcstYcumrealized     = NaN(N,fcstNhorizons,Njumpoffs);
@@ -210,22 +224,22 @@ if ~doLoMem
     drawsPHI       = NaN(MCMCdraws, N*(N-1)/2+N, Njumpoffs);
     drawsINVA      = NaN(MCMCdraws, N, N, Njumpoffs);
     drawsSQRTHT    = NaN(MCMCdraws, Tdata, N, Njumpoffs);
-    
+
     %% allocate memory for IRF and sum of FFR coeffs
     VMAmid  = NaN(N,N,fcstNhorizons,Njumpoffs);
     VMAtail = NaN(N,N,fcstNhorizons,Nquantiles,Njumpoffs);
-    
+
     if ~isempty(ndxSHADOWRATE)
         sumFFRmid  = NaN(N,Njumpoffs);
         sumFFRtail = NaN(N,Nquantiles,Njumpoffs);
     end
-    
+
 end
 
 drawsMaxVARroot = NaN(MCMCdraws, Njumpoffs);
 
 %% start latexwrapper to collect results
-titlename=sprintf('%s-%s-p%d', datalabel, labelELBsampling, p);
+titlename=sprintf('%s-%s-p%d', datalabel, modellabel, p);
 if ~isempty(samStart)
     titlename = strcat(titlename, '-', datestr(samStart, 'yyyymmm'));
 end
@@ -246,82 +260,95 @@ end
 
 % progressbar(0)
 parfor ndxT = 1 : Njumpoffs % parfor
-    
+
     TID   = parid;
     thisT = Tjumpoffs(ndxT);
     T     = thisT - p;
-    
+
     fprintf('loop %d, thisT %d, with TID %d\n', ndxT, thisT, TID)
-    
+
+    %% collect realized values (without cumulation)
+    thisdata = data; % to avoid parfor warning
+    yrealized = NaN(N, fcstNhorizons);
+    for h = 1 : fcstNhorizons
+        if thisT + h <= Tdata
+            yrealized(:,h) = thisdata(thisT+h,:)';
+        end
+    end
+
+    % set Funds Rate equal to ELB when at ELB
+    % (Note: ELB may be set higher than actual funds rate readings, e.g.
+    % 25p)
+    if ~isempty(ELBbound)
+        yieldsrealized             = yrealized(ndxSHADOWRATE,:);
+        ndx                        = yieldsrealized < ELBbound;
+        yieldsrealized(ndx)        = ELBbound;
+        yrealized(ndxSHADOWRATE,:) = yieldsrealized;
+    end
+
     %% MCMC sampler
-    
-    [PAI_all, PHI_all, invA_all, sqrtht_all, shadowrate_all, ~, ...
+
+    [PAI_all, PHI_all, invA_all, sqrtht_all, shadowrate_all, missingrate_all, ...
         ydraws, yhat, ...
         ycensordraws, ycensorhat, ...
         shadowratedraws, shadowratehat, ...
         yhatRB, ...
-        stackAccept] ...
-        = mcmcVARsimpleshadowrate(thisT, MCMCdraws, p, np, data, ydates, ...
-        minnesotaPriorMean, doTightPrior, doPAIactual, ...
-        ndxSHADOWRATE, ndxOTHERYIELDS, doELBsampling, false, ELBbound, elbT0, ...
+        logscoredraws, ...
+        logscoreXdraws, logscoreIdraws, ...
+        stackAccept ...
+        ] = mcmcVARshadowrate(thisT, MCMCdraws, p, np, data, ydates, ...
+        minnesotaPriorMean, doRATSprior, doPAIactual, ...
+        ndxSHADOWRATE, ndxOTHERYIELDS, doELBsampling, ELBbound, elbT0, ...
         check_stationarity, ...
-        fcstNdraws, fcstNhorizons, rndStreams{TID}); %#ok<PFBNS>
-    
+        [], [], ... % IRF1scale
+        yrealized, ...
+        fcstNdraws, fcstNhorizons, rndStreams{TID}, false); %#ok<PFBNS>
+
     %% Convergence diagnostics
     if Compute_diagnostics
         % display('computing convergence diagnostics..')
         Diagnostics(sqrtht_all,invA_all,PAI_all,PHI_all,N,K,MCMCdraws);
     end
-    
+
     %% collect sampled shadow rates
-    
+
     thisELBdummy = ELBdummy; % to avoid parfor warning about variable slicing
-    
+
     % Convergence Diagnostics for shadowrate Draws
     for s = 1 : Nshadowrates
         shadowratePSRF(s,ndxT) = DiagnosticsShadowrate(shadowrate_all(:,s,thisELBdummy(startELB:thisT,s)),s);
     end
-    
-    
-    
+
+
+
     % shadowrate_all is Ndraws x Nshadowrates x Nobs
     % first: permute into Nobs, Nshadowrates, Ndraws
     shadowrate_all = permute(shadowrate_all, [3 2 1]);
     % now compute moments
     shadowrateMid   = median(shadowrate_all,3);
     shadowrateTails = prctile(shadowrate_all, [5 25 75 95], 3);
-    
+
+    missingrate_all = permute(missingrate_all, [3 2 1]);
+    % now compute moments
+    missingrateMid   = median(missingrate_all,3);
+    missingrateTails = prctile(missingrate_all, [5 25 75 95], 3);
+
     %% compute out-of-sample forecasts
-    
+
     % a word on parfor strategy:
     % to make matlab better see the intended use of sliced variabes, use
     % local temp variables and then copy those into the slices at end of
     % loop
-    
-    % collect realized values
-    yrealized = NaN(N, fcstNhorizons);
-    for h = 1 : fcstNhorizons
-        if thisT + h <= Tdata
-            yrealized(:,h) = data(thisT+h,:)';
-        end
-    end
-    
-    % set Funds Rate equal to ELB when at ELB
-    % (Note: ELB may be set higher than actual funds rate readings, e.g.
-    % 25p)
-    yieldsrealized         = yrealized(ndxSHADOWRATE,:);
-    ndx                    = yieldsrealized < ELBbound;
-    yieldsrealized(ndx)    = ELBbound;
-    yrealized(ndxSHADOWRATE,:) = yieldsrealized;
-    
+
+
     % cumulated forecasts
     ycumrealized            = yrealized;
     ycumdraws               = ydraws;
     ycumhat                 = yhat;
-    ycumrealized(cumcode,:) = cumsum(ycumrealized(cumcode,:),2) ./ (1:fcstNhorizons);
-    ycumdraws(cumcode,:,:)  = cumsum(ycumdraws(cumcode,:,:),2) ./ (1:fcstNhorizons);
-    ycumhat(cumcode,:)      = cumsum(ycumhat(cumcode,:),2) ./ (1:fcstNhorizons);
-    
+    ycumrealized(cumcode,:) = cumsum(ycumrealized(cumcode,:),2); % ./ (1:fcstNhorizons);
+    ycumdraws(cumcode,:,:)  = cumsum(ycumdraws(cumcode,:,:),2); % ./ (1:fcstNhorizons);
+    ycumhat(cumcode,:)      = cumsum(ycumhat(cumcode,:),2); % ./ (1:fcstNhorizons);
+
     % CRPS
     yCRPS = NaN(N,fcstNhorizons);
     for h = 1 : fcstNhorizons
@@ -329,29 +356,29 @@ parfor ndxT = 1 : Njumpoffs % parfor
             yCRPS(n,h) = crpsDraws(yrealized(n,h), ydraws(n,h,:));
         end
     end
-    
+
     ycumCRPS = NaN(N,fcstNhorizons);
     for h = 1 : fcstNhorizons
         for n = 1 : N % loop over elements of Y
             ycumCRPS(n,h) = crpsDraws(ycumrealized(n,h), ycumdraws(n,h,:));
         end
     end
-    
+
     ycensorCRPS = NaN(N,fcstNhorizons);
     for h = 1 : fcstNhorizons
         for n = 1 : N % loop over elements of Y
             ycensorCRPS(n,h) = crpsDraws(yrealized(n,h), ycensordraws(n,h,:));
         end
     end
-    
-    
-    
+
+
+
     %% collect PAI moments
     PAImedian(:,:,ndxT)       = squeeze(median(PAI_all,1));
     PAImean(:,:,ndxT)         = squeeze(mean(PAI_all,1));
     PAIstdev(:,:,ndxT)        = squeeze(std(PAI_all,1,1));
     PAIquantiles(:,:,:,ndxT)  = permute(prctile(PAI_all,setQuantiles,1), [2 3 1]);
-    
+
     %% compute VMA / IRF
     theseMaxlambdas = NaN(MCMCdraws, 1); % placed before doLoMem to avoid parfor warning
     if doLoMem
@@ -366,7 +393,7 @@ parfor ndxT = 1 : Njumpoffs % parfor
         end
     else
         drawsVMA = NaN(N, N, fcstNhorizons, MCMCdraws);
-        
+
         % setup companion form matrix
         comp                        = zeros(N * p);
         comp(N + 1 : end,1:N*(p-1)) = eye(N*(p-1));
@@ -381,10 +408,10 @@ parfor ndxT = 1 : Njumpoffs % parfor
                 drawsVMA(:,:,h,m) = comppow(1:N,1:N);
             end
         end
-        
+
         VMAmid(:,:,:,ndxT)    = median(drawsVMA,4);
         VMAtail(:,:,:,:,ndxT) = prctile(drawsVMA, setQuantiles, 4);
-        
+
         %% collect sum of FEDFUNDS coefficients
         if ~isempty(ndxSHADOWRATE)
             ndxFFRcoef = NaN(p,1);
@@ -392,7 +419,7 @@ parfor ndxT = 1 : Njumpoffs % parfor
                 ndxFFRcoef(i) = (i - 1) * N + ndxSHADOWRATE;
             end
             sumFFR = NaN(N,MCMCdraws);
-            
+
             for m = 1 : MCMCdraws
                 thisPAI     = squeeze(PAI_all(m,2:Kbvar,:));
                 sumFFR(:,m) = sum(thisPAI(ndxFFRcoef,:),1);
@@ -401,12 +428,25 @@ parfor ndxT = 1 : Njumpoffs % parfor
             sumFFRtail(:,:,ndxT) = prctile(sumFFR,setQuantiles,2);
         end
     end
-    
+
     %% copy results into sliced variables
-    
+
     fcstYrealized(:,:,ndxT) = yrealized;
     fcstYhatRB(:,:,ndxT)    = yhatRB;
-    
+
+    % predictive likelihood scores
+    fcstYmvlogscoreDraws(:,ndxT)  = logscoredraws;
+    maxlogscoredraw               = max(logscoredraws);
+    fcstYmvlogscore(:,ndxT)       = log(mean(exp(logscoredraws - maxlogscoredraw))) + maxlogscoredraw;
+
+    fcstYmvlogscoreXdraws(:,ndxT)   = logscoreXdraws;
+    maxlogscoredraw                 = max(logscoreXdraws);
+    fcstYmvlogscoreX(:,ndxT)        = log(mean(exp(logscoreXdraws - maxlogscoredraw))) + maxlogscoredraw;
+
+    fcstYmvlogscoreIdraws(:,ndxT)   = logscoreIdraws;
+    maxlogscoredraw                 = max(logscoreIdraws);
+    fcstYmvlogscoreI(:,ndxT)        = log(mean(exp(logscoreIdraws - maxlogscoredraw))) + maxlogscoredraw;
+
     % forecast
     ymed = median(ydraws,3);
     fcstYhat(:,:,ndxT)          = yhat;
@@ -415,7 +455,7 @@ parfor ndxT = 1 : Njumpoffs % parfor
     fcstYmederror(:,:,ndxT)     = yrealized - ymed;
     fcstYcrps(:,:,ndxT)         = yCRPS;
     fcstYquantiles(:,:,:,ndxT)  = prctile(ydraws, setQuantiles, 3);
-    
+
     % cumulated forecast
     fcstYcumrealized(:,:,ndxT)    = ycumrealized;
     ymed = median(ycumdraws,3);
@@ -425,7 +465,7 @@ parfor ndxT = 1 : Njumpoffs % parfor
     fcstYcummederror(:,:,ndxT)     = ycumrealized - ymed;
     fcstYcumcrps(:,:,ndxT)         = ycumCRPS;
     fcstYcumquantiles(:,:,:,ndxT)  = prctile(ycumdraws, setQuantiles, 3);
-    
+
     % censored forecast
     ymed = median(ycensordraws,3);
     fcstYcensorhat(:,:,ndxT)          = ycensorhat;
@@ -434,16 +474,16 @@ parfor ndxT = 1 : Njumpoffs % parfor
     fcstYcensormederror(:,:,ndxT)     = yrealized - ymed;
     fcstYcensorcrps(:,:,ndxT)         = ycensorCRPS;
     fcstYcensorquantiles(:,:,:,ndxT)  = prctile(ycensordraws, setQuantiles, 3);
-    
+
     % shadow rate forecast
     fcstShadowYhat(:,:,ndxT)          = shadowratehat;
     fcstShadowYmedian(:,:,ndxT)       = median(shadowratedraws, 3);
     fcstShadowYquantiles(:,:,:,ndxT)  = prctile(shadowratedraws, setQuantiles, 3);
-    
-    
+
+
     % copy mcmc output
     drawsMaxVARroot(:,ndxT)     = theseMaxlambdas;
-    
+
     if ~doLoMem
         drawsPAI(:,:,:,ndxT)  = PAI_all;
         drawsPHI(:,:,ndxT)    = PHI_all;
@@ -453,20 +493,28 @@ parfor ndxT = 1 : Njumpoffs % parfor
         dummy(:, p+1:thisT, :)     = sqrtht_all;
         drawsSQRTHT(:, :, :, ndxT) = dummy;
     end
-    
+
     %% store shadowrate results
     jumpoff = p+elbT0;
-    
+
     % need to work with dummy to get around Matlab's parfor rules
     dummy                               = NaN(length(ydates),Nshadowrates);
     dummy(jumpoff+1:thisT,:)            = shadowrateMid;
     shadowrateVintagesMid(:, :, ndxT)   = dummy;
-    
+
     dummy                               = NaN(length(ydates),Nshadowrates,4);
     dummy(jumpoff+1:thisT,:,:)          = shadowrateTails;
     shadowrateVintagesTails(:,:,:,ndxT) = dummy;
-  
-    
+
+    dummy                               = NaN(length(ydates),Nshadowrates);
+    dummy(jumpoff+1:thisT,:)            = missingrateMid;
+    missingrateVintagesMid(:, :, ndxT)  = dummy;
+
+    dummy                                = NaN(length(ydates),Nshadowrates,4);
+    dummy(jumpoff+1:thisT,:,:)           = missingrateTails;
+    missingrateVintagesTails(:,:,:,ndxT) = dummy;
+
+
 end
 
 %% plot QRT shadow rate
@@ -493,10 +541,13 @@ for n = 1 : Nshadowrates
     hold on
     plot(ydates, shadowrateQRTmid(:,n), 'k-', 'linewidth', 2)
     plot(ydates, squeeze(shadowrateQRTtails(:,n,:)), 'k--', 'linewidth', 1)
-    
+
     plot(ydates, shadowrateVintagesMid(:,n,end), 'r-', 'linewidth', 2)
     plot(ydates, squeeze(shadowrateVintagesTails(:,n,:,end)), 'r--', 'linewidth', 1)
-    
+
+    %     if n == 1 % should be fedfunds
+    %         ylim([-8 3])
+    %     end
     xtickdates(ydates([firstQRTobs end]))
     if exist('p', 'var')
         title(sprintf('Shadowrate VAR(%d)', p))
@@ -507,93 +558,92 @@ end
 %% plot evolution of predictive densities
 theseHorizons = [3 12 18 24];
 for n = 1 : N
-    
+
     thisfig = figure;
-    
+
     for ii = 1 : length(theseHorizons)
         h = theseHorizons(ii);
-        
+
         yrealized = squeeze(fcstYrealized(n,h,:));
-        
+
         fcstMid   = squeeze(fcstYhat(n,h,:));
         fcstTails = squeeze(fcstYquantiles(n,h,ndxCI,:))';
-        
+
         fcstCensorMid   = squeeze(fcstYcensorhat(n,h,:));
         fcstCensorTails = squeeze(fcstYcensorquantiles(n,h,ndxCI,:))';
-        
+
         subplot(2,2,ii)
-        
+
         hold on
         plotCI(fcstMid, fcstTails, ydates(Tjumpoffs), [], 'w-', 'linewidth', 1);
         plotCIlines(fcstCensorMid, fcstCensorTails, ydates(Tjumpoffs), [], 'r');
-        
-        
+
+
         plot(ydates(Tjumpoffs),yrealized, 'b-', 'linewidth', 2)
-        
+
         title(sprintf('h=%d', h))
         sgtitle(sprintf('%s', Ylabels{n}))
         xtickdates(ydates(Tjumpoffs))
-        
+
     end
     wrapthisfigure(thisfig, sprintf('predictiveDensity-%s', ncode{n}), wrap)
 end
 
 theseHorizons = [3 12 18 24];
 for n = 1 : N
-    
+
     thisfig = figure;
-    
+
     for ii = 1 : length(theseHorizons)
         h = theseHorizons(ii);
-        
+
         yrealized = squeeze(fcstYcumrealized(n,h,:));
-        
+
         fcstMid   = squeeze(fcstYcumhat(n,h,:));
         fcstTails = squeeze(fcstYcumquantiles(n,h,ndxCI,:))';
-                
+
         subplot(2,2,ii)
-        
+
         hold on
         plotCI(fcstMid, fcstTails, ydates(Tjumpoffs), [], 'w-', 'linewidth', 1);
-        
+
         plot(ydates(Tjumpoffs),yrealized, 'b-', 'linewidth', 2)
-        
+
         title(sprintf('h=%d', h))
         sgtitle(sprintf('%s', Ylabels{n}))
         xtickdates(ydates(Tjumpoffs))
-        
+
     end
     wrapthisfigure(thisfig, sprintf('predictiveDensityCum-%s', ncode{n}), wrap)
 end
 
-clear fcstTails
 
 %% plot shadowyield forecasts
 
 theseHorizons = [3 12 18 24];
 for i = 1 : length(ndxYIELDS)
-    
+
     n = ndxYIELDS(i);
-    
+
     thisfig = figure;
-    
+
     for ii = 1 : length(theseHorizons)
         h = theseHorizons(ii);
-        
+
         subplot(2,2,ii)
         fcstMid   = squeeze(fcstShadowYhat(i,h,:));
         fcstTails = squeeze(fcstShadowYquantiles(i,h,ndxCI,:))';
         yrealized = squeeze(fcstYrealized(n,h,:));
-        
-        
+
+
         hold on
         plotCI(fcstMid, fcstTails, ydates(Tjumpoffs));
         plot(ydates(Tjumpoffs),yrealized, 'b-', 'linewidth', 2)
-        
+
         title(sprintf('h=%d', h))
         sgtitle(sprintf('%s', Ylabels{n}))
         xtickdates(ydates(Tjumpoffs))
-        
+
     end
     wrapthisfigure(thisfig, sprintf('predictiveShadowDensity-%s', ncode{n}), wrap)
 end
@@ -616,17 +666,17 @@ xtickdates(ydates(Tjumpoffs))
 wrapthisfigure(this, 'maxlambda', wrap)
 
 %% store qrt summary
-matfilename = sprintf('%s-%s-p%d', datalabel, labelELBsampling, p);
+matfilename = sprintf('%s-%s-p%d', datalabel, modellabel, p);
 if ~isempty(samStart)
     matfilename = strcat(matfilename, '-', datestr(samStart, 'yyyymmm'));
 end
-varlist = {'ydates', 'p', 'Tjumpoffs', 'N', ...
+varlist = {'data', 'ydates', 'p', 'Tjumpoffs', 'N', ...
     'ncode', 'tcode', 'cumcode', ...
     'fcst*', 'fcstNhorizons', ...
     'PAI*', ...
-    'shadowrate*', ...
+    'shadowrate*', 'missingrate*', ...
     'ndxSHADOWRATE', 'ndxYIELDS', 'ndxOTHERYIELDS', 'ELBbound', 'ELBdummy',...
-    'datalabel', 'labelELBsampling', ...
+    'datalabel', 'modellabel', ...
     'doQuarterly', ...
     'setQuantiles', ...
     'MCMCdraws'};
@@ -638,7 +688,7 @@ if ~doLoMem
 end
 
 if doStoreXL
-    matfilename = sprintf('%s-%s-p%d-draws', datalabel, labelELBsampling, p);
+    matfilename = sprintf('%s-%s-p%d-draws', datalabel, modellabel, p);
     save(matfilename, varlist{:}, 'draws*', '-v7.3');
 end
 

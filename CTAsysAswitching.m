@@ -1,4 +1,4 @@
-function PAI=CTAsys(Y,X,N,K,T,A_,sqrtht,iV,iVb_prior,PAI,rndStream)
+function PAI=CTAsysAswitching(Y,X,N,K,T,A_,Aelb_,atELB,sqrtht,iV,iVb_prior,PAI,rndStream)
 
 % =========================================================================
 % Performs a draw from the conditional posterior of the VAR conditional
@@ -58,7 +58,10 @@ function PAI=CTAsys(Y,X,N,K,T,A_,sqrtht,iV,iVb_prior,PAI,rndStream)
 zdraws = randn(rndStream,K,N);
 XPAI   = NaN(T,N);
 
+XatELB   = X(atELB,:,:);
+XawayELB = X(~atELB,:,:);
 Ik       = eye(K);
+
 for j=1:N
     
     % select coefficients of equation j to remove from the LHS
@@ -71,15 +74,25 @@ for j=1:N
             XPAI(:,jj) = X(:,:,jj) * PAI(:,jj);
         end
     end
-    
+
     % build model
-    lambda=vec(sqrtht(:,j:N));
-    Y_j=vec((Y-XPAI)*A_(j:N,:)')./lambda; 
+    lambda_atELB    = sqrtht(atELB,j:N);
+    lambda_awayELB  = sqrtht(~atELB,j:N);
     
-    X_j=kron(A_(j:N,j),X(:,:,j))./lambda;
+    YXPAI         = Y-XPAI;
+    YXPAI_atELB   = YXPAI(atELB,:)  * Aelb_(j:N,:)';
+    YXPAI_awayELB = YXPAI(~atELB,:) * A_(j:N,:)';
+
+    Y_j_atELB     = YXPAI_atELB(:)   ./ lambda_atELB(:);
+    Y_j_awayELB   = YXPAI_awayELB(:) ./ lambda_awayELB(:);
+    Y_j           = [Y_j_atELB; Y_j_awayELB];
+    
+    X_j_atELB     = kron(Aelb_(j:N,j),XatELB(:,:,j)) ./ lambda_atELB(:);
+    X_j_awayELB   = kron(A_(j:N,j),XawayELB(:,:,j))  ./ lambda_awayELB(:);
+    X_j           = [X_j_atELB; X_j_awayELB];
     
     % posterior moments
-    index=K*(j-1)+1:(K*(j-1)+K);
+    index   = K*(j-1)+1:(K*(j-1)+K);
     iV_post = iV(index,index)  + X_j'*X_j;
     [iVchol_post, ispd]  = chol(iV_post, 'lower');
     if ispd == 0

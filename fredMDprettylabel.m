@@ -72,8 +72,6 @@ if doShort
                 pcode{n} = '20-Year Yield';
             case 'BAAFFM'
                 pcode{n} = 'Baa Spread';
-            case 'CYCLE1S_ASSETS'
-                pcode{n} = 'Cyc. Assets';
             otherwise
                 pcode{n}= ncode{n};
         end % switch
@@ -133,8 +131,6 @@ else
                 pcode{n} = '20-Year Treasury Rate';
             case 'BAAFFM'
                 pcode{n} = 'Moody''s Baa Corporate Bond Minus FEDFUNDS';
-            case 'CYCLE1S_ASSETS'
-                pcode{n} = 'Cycle1s Assets';
             otherwise
                 pcode{n}= ncode{n};
         end % switch

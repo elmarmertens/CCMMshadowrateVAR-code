@@ -81,7 +81,7 @@ for j=1:N
         
         warning('switching to QR routine')
         
-        iVchol = chol(iV(index,index))'; % todo: could do this once and for all, not for every call of triang
+        iVchol = chol(iV(index,index))'; % could do this once and for all, not for every call of triang
         % set up Kailath's fast array matrix
         qrM = [iVchol, X_j'];
         R = triu(qr(qrM',0))';
