@@ -1,6 +1,6 @@
 # CCMMshadowrateVAR-code
 
-# Code for „Forecasting with Shadow-Rate VARs“ by Carriero, Clark, Marcellino and Mertens (2021)
+# Code for „Forecasting with Shadow-Rate VARs“ by Carriero, Clark, Marcellino and Mertens (2023)
 
 Andrea Carriero (Queen Mary University of London), Todd Clark (Federal Reserve Bank of Cleveland), Massimiliano Marcellino (Bocconi University, IGIER and CEPR) and Elmar Mertens (Deutsche Bundesbank)
 
@@ -15,7 +15,7 @@ All core scripts are in the main directory. In addition, there are the following
 - `data` for data construction, use `generateFREDdata.m` to produce input files, named `fredMD*.csv`, as needed by the estimation routines described further below
 - `matlabtoolbox` for general utilities (also available at https://github.com/elmarmertens/em-matlabbox)
 
-The default data file is `fredMD20baa-2021-07.csv` (based on the 2021-07 vintage of FRED-MD, available at https://research.stlouisfed.org/econ/mccracken/fred-databases/).
+The default data file is `fredMD20baa-2022-09.csv` (based on the 2022-09 vintage of FRED-MD, available at https://research.stlouisfed.org/econ/mccracken/fred-databases/).
 
 ## General notes
 
@@ -31,11 +31,12 @@ The default data file is `fredMD20baa-2021-07.csv` (based on the 2021-07 vintage
 
 To produce quasi-real estiamtes
 - `goVAR.m` for the standard linear VAR
-- `goVARsimpleshadowrate.m` for the simple shadow-rate VAR (as described in the paper)
-- `goVARhybridshadowrate.m` for the hybrid shadow-rate VAR (as described in the paper)
+- `goVARshadowrate.m` for the simple shadow-rate VAR (as described in the paper)
+- `goVARshadowrateBlockHybrid.m` for the hybrid shadow-rate VAR (as described in the paper)
 
 ## Other
-- `doVARsimpelshadowrate.m` and `doVARhyridshadowrate.m` provide estimates for a single data sample, with and without imposing the ELB onto the missing-data problem of the shadow-rate sample and producing comparison figures as shown in paper and supplementary appendix
-- `oosEvaluationTables.m` produces forecast comparison tables based on output stored by the `goVAR*shadowrate.m` scripts
+- `doVARshadowrateMissingData.m` and `doVARshadowrateBlockHybridMissingData.m` provide estimates (from simple and hybrid shadow-rate VARs) for a single data sample, with and without imposing the ELB onto the missing-data problem of the shadow-rate sample and producing comparison figures as shown in paper and supplementary appendix
+- `oosEvaluationTables2023.m` produces forecast comparison tables based on output stored by the `goVAR*shadowrate.m` scripts
 - `showQRTshadow2023.m` produces figures of shadow-rate estimates (full-sample and quasi-real-time) based on output stored by the `goVAR*shadowrate.m` scripts
 - `showPAIchanges.m` produces comparison figures of VAR transition coefficients
+- `doGIRFlinear.m`, `doGIRFshadowrate.m`, and `doGIRFshadowrateBlockHybrid.m`, produce full-sample MCMC estimates of each model, and then perform GIRF simulations. These `doGIRF*.m` can also be used to merely run the MCMC procedures, and continue with the GIRF analysis at a later stage (or for additional dates) using the analogously named `generateGIRF*.m` scripts. To produce plots use `plotGIRF.m` (to compare hybird VAR outputs at different dates) and `plotGIRF2.m` (to compare GIRFS obtained from different models). The figures shown in the paper were produced with `prettyplotGIRF.m`.
