@@ -1,6 +1,6 @@
 # CCMMshadowrateVAR-code
 
-# Code for „Forecasting with Shadow-Rate VARs“ by Carriero, Clark, Marcellino and Mertens (2023)
+# Code for „Shadow-Rate VARs“ by Carriero, Clark, Marcellino and Mertens (2023)
 
 Andrea Carriero (Queen Mary University of London), Todd Clark (Federal Reserve Bank of Cleveland), Massimiliano Marcellino (Bocconi University, IGIER and CEPR) and Elmar Mertens (Deutsche Bundesbank)
 
