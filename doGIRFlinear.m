@@ -28,7 +28,7 @@ jumpDate            = datenum(2022,08,01);
 check_stationarity  = 0;                  % Truncate nonstationary draws? (1=yes)
 
 doIRF               = true;
-irfSCALES           = [1 10];
+irfSCALES           = [1 5 10];
 irfDATES            = [datenum(2007,1,1) datenum(2009,1,1) datenum([2010 2012 2014],12,1)];
 
 p                   = 12;                    % Number of lags on dependent variables
@@ -37,7 +37,7 @@ irfNdraws           = 1e3;                   % per MCMC node
 
 % SED-PARAMETERS-HERE
 
-irfHorizon          = 25;
+irfHorizon          = 50;
 fcstNhorizons       = irfHorizon;                 % irrelevant here
 fcstNdraws          = MCMCdraws;             % irrelevant here
 
@@ -142,6 +142,17 @@ clear PAI_all invA_all PHI_all sqrtht_all
 zdraws   = randn(rndStream, N, irfHorizon, irfNdraws);
 zSVdraws = randn(rndStream, N, irfHorizon * irfNdraws);
 
+%% shock size
+switch datalabel
+    case {'fredMD20VXO-2022-09', 'fredMD20VXOexYield-2022-09'}
+        shocksize = 1.27;
+    case {'fredMD20EBP-2022-09', 'fredMD20EBPexYield-2022-09', 'fredMD3EBP-2022-09'}
+        shocksize = 0.11;
+    otherwise
+        shocksize = 1;
+end
+
+
 %% GIRF
 if doIRF
     for IRF1scale = irfSCALES
@@ -163,7 +174,7 @@ if doIRF
 
             wrap = [];
             initwrap
-
+            
             ndxIRFT0               = find(ydates == irfDate);
             SVjumpoffDraws         = permute(SVdraws(:,ndxIRFT0 - p,:), [3 1 2]);
             % allocate memory
@@ -357,6 +368,8 @@ if doIRF
             if any(ndx)
                 clear(allw(ndx).name)
             end
+            titlename=sprintf('%s-p%d-IRF1scale%d-jumpoff%s-irfDate%s', datalabel, p, IRF1scale, ...
+                datestr(jumpDate, 'yyyymmm'), datestr(irfDate, 'yyyymmm'));
             save(sprintf('irfLinear-%s.mat', titlename), '-v7.3')
 
             close all

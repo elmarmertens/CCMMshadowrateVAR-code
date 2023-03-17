@@ -35,12 +35,13 @@ doPlots = true;
 
 %% settings
 
-for this = {'fredMD20VXO', 'fredMD20VXOexYield', 'fredMD20EBP', 'fredMD20EBPexYield'}
-%     {'fredMD20', 'fredMD20exYield', ...
-%     'fredMD14longyields', 'fredMD15plus6M', 'fredMD15plus1Y', 'fredMD15plus5Y', 'fredMD15plus10Y', ...
-%         'fredMD15plusShortYields',  'fredMD15plusLongYields', ...
-%         'fredMD15plusBAA', 'fredMD15plusLongYieldsBAA'}
-
+for this = {'fredMD20', 'fredMD20exYield', ...
+            'fredMD14longyields', 'fredMD15plus6M', 'fredMD15plus1Y', 'fredMD15plus5Y', 'fredMD15plus10Y', ...
+            'fredMD15plusShortYields',  'fredMD15plusLongYields', ...
+            'fredMD15plusBAA', 'fredMD15plusLongYieldsBAA', ...
+            'fredMD3EBP', ...
+            'fredMD20VXO', 'fredMD20VXOexYield', 'fredMD20EBP', 'fredMD20EBPexYield'}
+    
     clear rawdata tcode names tabledata
 
     datalabel = this{:};
@@ -313,6 +314,8 @@ for this = {'fredMD20VXO', 'fredMD20VXOexYield', 'fredMD20EBP', 'fredMD20EBPexYi
     switch datalabel
         case {'fredMD3'}
             codeVariableSelection = {'UNRATE', 'PCEPI', 'FEDFUNDS'};
+        case {'fredMD3EBP'}
+            codeVariableSelection = {'EXCESSBONDPREMIUM', 'UNRATE', 'PCEPI', 'FEDFUNDS'};
         case {'fredMD3cumYield'}
             codeVariableSelection = {'UNRATE', 'PCEPI', 'FEDFUNDS', 'TB6MS', 'GS1', 'GS5', 'GS10'};
         case {'fredMD3krippner'}

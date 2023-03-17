@@ -35,7 +35,7 @@ irfDATES            = [datenum(2007,1,1) datenum(2009,1,1) datenum([2010 2012 20
 
 p                   = 12;                    % Number of lags on dependent variables
 irfNdraws           = 1e3;                   % per MCMC node
-irfHorizon          = 25;
+irfHorizon          = 50;
 
 % SED-PARAMETERS-HERE
 
@@ -143,7 +143,7 @@ zSVdraws = randn(rndStream, N, irfHorizon * irfNdraws);
 switch datalabel
     case {'fredMD20VXO-2022-09', 'fredMD20VXOexYield-2022-09'}
         shocksize = 1.27;
-    case {'fredMD20EBP-2022-09', 'fredMD20EBPexYield-2022-09'}
+    case {'fredMD20EBP-2022-09', 'fredMD20EBPexYield-2022-09', 'fredMD3EBP-2022-09'}
         shocksize = 0.11;
     otherwise
         shocksize = 1;

@@ -119,7 +119,7 @@ zSVdraws = randn(rndStream, N, irfHorizon * irfNdraws);
 switch datalabel
     case {'fredMD20VXO-2022-09', 'fredMD20VXOexYield-2022-09'}
         shocksize = 1.27;
-    case {'fredMD20EBP-2022-09', 'fredMD20EBPexYield-2022-09'}
+    case {'fredMD20EBP-2022-09', 'fredMD20EBPexYield-2022-09', 'fredMD3EBP-2022-09'}
         shocksize = 0.11;
     otherwise
         shocksize = 1;
@@ -334,13 +334,7 @@ for IRF1scale = irfSCALES
 
             xlim([0 irfHorizon-1])
 
-            if any(ndxYIELDS == n) && ~(all(ylim > ELBbound) || all(ylim < ELBbound))
-                hELB = yline(ELBbound, ':', 'color', Colors4Plots(5), 'LineWidth',2);
-                legend([hbase hplus hminus hELB], 'baseline', 'positive shock', 'negative shock', 'ELB', ...
-                    'location', 'best')
-            else
-                legend([hbase hplus hminus], 'baseline', 'positive shock', 'negative shock', 'location', 'best')
-            end
+            legend([hbase hplus hminus], 'baseline', 'positive shock', 'negative shock', 'location', 'best')
             title(sprintf('%s per %s', Ylabels{n}, datestr(irfDate, 'yyyymmm')), 'FontWeight', 'normal')
             wrapthisfigure(thisfig, sprintf('pathResponses1plusminus-%s-IRF1scale%d-%s-jumpoff%s-irfDate%s', datalabel, IRF1scale, ncode{n}, ...
                 datestr(jumpDate, 'yyyymmm'), datestr(irfDate, 'yyyymmm')), wrap)

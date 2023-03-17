@@ -26,7 +26,7 @@ modeltype           = 'BlockHybrid';
 resultsdir          = 'irfVXOEBP';
 
 p                   = 12;                    % Number of lags on dependent variables
-irfHorizon          = 25;
+irfHorizon          = 48;
 
 samStart            = [];
 
@@ -38,7 +38,6 @@ irfScale2           = 10;
 
 
 % SED-PARAMETERS-HERE
-irfDATES            = [datenum(2007,1,1) datenum([2010 2014],12,1)];
 
 
 np = 12;
@@ -47,7 +46,7 @@ fontsize = 18;
 
 %% GIRF
 
-for dd = 1 %  1 :  length(DATALABEL)
+for dd = 1 :  length(DATALABEL)
 
     datalabel = DATALABEL{dd};
     jumpDate  = datenum(2022,08,01);
@@ -114,22 +113,22 @@ for dd = 1 %  1 :  length(DATALABEL)
             subplot(2,1,1)
             hold on
             set(gca, 'FontSize', fontsize)
-            h0  = plot(1:irfHorizon-1, irf0.IRF1plus(n,1:end-1), '-', 'color', color0, 'linewidth', 4);             %#ok<NASGU> 
-            h1  = plot(1:irfHorizon-1, irf1.IRF1plus(n,1:end-1) / irfScale1 * irfScale0, '--', 'color', color1, 'linewidth', 3);             %#ok<NASGU> 
-            h2  = plot(1:irfHorizon-1, irf2.IRF1plus(n,1:end-1) / irfScale2 * irfScale0, 'd', 'color', color2, 'linewidth', 3);             %#ok<NASGU> 
-            xlim([0 irfHorizon-1])
-            xticks(0:6:irfHorizon-1)
+            h0  = plot(1:irfHorizon, irf0.IRF1plus(n,1:irfHorizon), '-', 'color', color0, 'linewidth', 4);             %#ok<NASGU> 
+            h1  = plot(1:irfHorizon, irf1.IRF1plus(n,1:irfHorizon) / irfScale1 * irfScale0, '--', 'color', color1, 'linewidth', 3);             %#ok<NASGU> 
+            h2  = plot(1:irfHorizon, irf2.IRF1plus(n,1:irfHorizon) / irfScale2 * irfScale0, 'd', 'color', color2, 'linewidth', 3);             %#ok<NASGU> 
+            xlim([0 irfHorizon])
+            xticks(0:6:irfHorizon)
             yline(0, 'k:')
             title('positive shock', 'FontWeight', 'normal')
 
             subplot(2,1,2)
             hold on
             set(gca, 'FontSize', fontsize)
-            h0  = plot(1:irfHorizon-1, irf0.IRF1minus(n,1:end-1), '-', 'color', color0, 'linewidth', 4);             
-            h1  = plot(1:irfHorizon-1, irf1.IRF1minus(n,1:end-1) / irfScale1 * irfScale0, '--', 'color', color1, 'linewidth', 3);             
-            h2  = plot(1:irfHorizon-1, irf2.IRF1minus(n,1:end-1) / irfScale2 * irfScale0, 'd', 'color', color2, 'linewidth', 3);             
-            xlim([0 irfHorizon-1])
-            xticks(0:6:irfHorizon-1)
+            h0  = plot(1:irfHorizon, irf0.IRF1minus(n,1:irfHorizon), '-', 'color', color0, 'linewidth', 4);             
+            h1  = plot(1:irfHorizon, irf1.IRF1minus(n,1:irfHorizon) / irfScale1 * irfScale0, '--', 'color', color1, 'linewidth', 3);             
+            h2  = plot(1:irfHorizon, irf2.IRF1minus(n,1:irfHorizon) / irfScale2 * irfScale0, 'd', 'color', color2, 'linewidth', 3);             
+            xlim([0 irfHorizon])
+            xticks(0:6:irfHorizon)
             yline(0, 'k:')
             title('negative shock', 'FontWeight', 'normal')
 

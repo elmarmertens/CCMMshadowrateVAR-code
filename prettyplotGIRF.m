@@ -30,17 +30,15 @@ modeltypeALT        = 'Linear';
 modelprettyALT      = 'Linear VAR';
 
 p                   = 12;                    % Number of lags on dependent variables
-irfHorizon          = 25;
+irfHorizon          = 48;
 
 samStart            = [];
 
 irfDate0            = datenum(2007,1,1);
-irfDATES            = [datenum(2009,1,1) datenum([2010 2012 2014],12,1)]; %#ok<NASGU> 
-irfSCALES           = [1 10]; %#ok<NASGU> 
+irfDATES            = [datenum(2009,1,1) datenum([2010 2012 2014],12,1)]; 
+irfSCALES           = [1 5 10]; 
 
 % SED-PARAMETERS-HERE
-irfDATES            = datenum(2012,12,1);
-irfSCALES           = 1;
 
 quicky = false;
 
@@ -129,12 +127,12 @@ for dd = 1  :  length(DATALABEL)
                 hold on
                 ax1 = gca;
                 set(ax1, 'FontSize', fontsize)
-                h1 = plot(1:irfHorizon-1, irf1.IRF1plus(n,1:end-1), '-', 'color', color1, 'linewidth', 4);
-                plot(1:irfHorizon-1, squeeze(irf1.IRF1plusTails(n,1:end-1,:,:)), '-', 'color', color1, 'linewidth', 2);
-                h0  = plot(1:irfHorizon-1, irf0.IRF1plus(n,1:end-1), '-.', 'color', color0, 'linewidth', 3);             
-                plot(1:irfHorizon-1, squeeze(irf0.IRF1plusTails(n,1:end-1,:,:)), '-.', 'color', color0, 'linewidth', 1);
-                xlim([1 irfHorizon-1])
-                xticks([1, 6:6:irfHorizon-1])
+                h1 = plot(1:irfHorizon, irf1.IRF1plus(n,1:irfHorizon), '-', 'color', color1, 'linewidth', 4);
+                plot(1:irfHorizon, squeeze(irf1.IRF1plusTails(n,1:irfHorizon,:,:)), '-', 'color', color1, 'linewidth', 2);
+                h0  = plot(1:irfHorizon, irf0.IRF1plus(n,1:irfHorizon), '-.', 'color', color0, 'linewidth', 3);             
+                plot(1:irfHorizon, squeeze(irf0.IRF1plusTails(n,1:irfHorizon,:,:)), '-.', 'color', color0, 'linewidth', 1);
+                xlim([1 irfHorizon])
+                xticks([1, 6:6:irfHorizon])
                 grid on
                 YLIM1 = ylim;
                
@@ -145,12 +143,12 @@ for dd = 1  :  length(DATALABEL)
                 hold on
                 ax2 = gca;
                 set(ax2, 'FontSize', fontsize)
-                h2BASE = plot(1:irfHorizon-1, irf1.IRF1plus(n,1:end-1), '-', 'color', color1, 'linewidth', 4);
-                plot(1:irfHorizon-1, squeeze(irf1.IRF1plusTails(n,1:end-1,:,:)), '-', 'color', color1, 'linewidth', 2);
-                h2ALT  = plot(1:irfHorizon-1, irfALT.IRF1plus(n,1:end-1), '-.', 'color', colorALT, 'linewidth', 3);             
-                plot(1:irfHorizon-1, squeeze(irfALT.IRF1plusTails(n,1:end-1,:,:)), '-.', 'color', colorALT, 'linewidth', 1);
-                xlim([1 irfHorizon-1])
-                xticks([1, 6:6:irfHorizon-1])
+                h2BASE = plot(1:irfHorizon, irf1.IRF1plus(n,1:irfHorizon), '-', 'color', color1, 'linewidth', 4);
+                plot(1:irfHorizon, squeeze(irf1.IRF1plusTails(n,1:irfHorizon,:,:)), '-', 'color', color1, 'linewidth', 2);
+                h2ALT  = plot(1:irfHorizon, irfALT.IRF1plus(n,1:irfHorizon), '-.', 'color', colorALT, 'linewidth', 3);             
+                plot(1:irfHorizon, squeeze(irfALT.IRF1plusTails(n,1:irfHorizon,:,:)), '-.', 'color', colorALT, 'linewidth', 1);
+                xlim([1 irfHorizon])
+                xticks([1, 6:6:irfHorizon])
                 % yline(0, 'k:')
                 grid on
                 YLIM2 = ylim;
@@ -168,6 +166,9 @@ for dd = 1  :  length(DATALABEL)
                     datestr(jumpDate, 'yyyymmm'), datestr(irfDate0, 'yyyymmm'), datestr(irfDate, 'yyyymmm')), wrap, [], [], [], [], true);
                 legend([h0, h1], datestr(irfDate0, 'yyyy mmm'), datestr(irfDate, 'yyyy mmm'), 'location', 'best')
                 wrapthisfigure(thisfig1, sprintf('IRF1scale%d-%s-%s-%s-jumpoff%s-irfDate%s-vs-%s-WITHLEGEND', IRF1scale, modeltype, datalabel, ncode{n}, ...
+                    datestr(jumpDate, 'yyyymmm'), datestr(irfDate0, 'yyyymmm'), datestr(irfDate, 'yyyymmm')), wrap, [], [], [], [], true)
+                title(ax1, Ylabels{n})  
+                wrapthisfigure(thisfig1, sprintf('IRF1scale%d-%s-%s-%s-jumpoff%s-irfDate%s-vs-%s-WITHLEGENDTITLE', IRF1scale, modeltype, datalabel, ncode{n}, ...
                     datestr(jumpDate, 'yyyymmm'), datestr(irfDate0, 'yyyymmm'), datestr(irfDate, 'yyyymmm')), wrap)
      
                
@@ -175,6 +176,9 @@ for dd = 1  :  length(DATALABEL)
                     datestr(jumpDate, 'yyyymmm'), datestr(irfDate, 'yyyymmm')), wrap, [], [], [], [], true)
                 legend([h2BASE, h2ALT], modelpretty, modelprettyALT, 'location', 'best')
                 wrapthisfigure(thisfig2, sprintf('IRF1scale%d-%s-vs-%s-%s-%s-jumpoff%s-irfDate%s-WITHLEGEND', IRF1scale, modeltype, modeltypeALT, datalabel, ncode{n}, ...
+                    datestr(jumpDate, 'yyyymmm'), datestr(irfDate, 'yyyymmm')), wrap, [], [], [], [], true)
+                title(ax2, Ylabels{n})  
+                wrapthisfigure(thisfig2, sprintf('IRF1scale%d-%s-vs-%s-%s-%s-jumpoff%s-irfDate%s-WITHLEGENDTITLE', IRF1scale, modeltype, modeltypeALT, datalabel, ncode{n}, ...
                     datestr(jumpDate, 'yyyymmm'), datestr(irfDate, 'yyyymmm')), wrap)
      
                 if ~quicky
