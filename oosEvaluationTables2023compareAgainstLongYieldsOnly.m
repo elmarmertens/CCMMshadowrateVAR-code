@@ -22,7 +22,7 @@ addpath matlabtoolbox/emstatespace/
 
 %% setup
 
-resultsdir = '~/jam/lager/quantico2023logscoresXL/';
+resultsdir = '../matfilesShadowrateVAR/lagerFREDblock';
 
 doCharts = false;
 doBold   = true; % matter only if doCharts = false;
@@ -30,19 +30,19 @@ doBold   = true; % matter only if doCharts = false;
 datalabel0   = 'fredMD14longyields';
 prettylabel0 = 'Linear VAR without short-term yields';
 
-% datalabel0   = 'fredMD20exYield';
+% datalabel0   = 'fredblockMD20exYield';
 % prettylabel0 = 'all variables ex yields';
 
 %% define alternative datasets
 dd = 0;
 
-% dd = dd + 1;
-% ALTDATA(dd).dataset     = 'fredMD20exYield';
-% ALTDATA(dd).prettylabel = 'all variables ex yields';
+dd = dd + 1;
+ALTDATA(dd).dataset     = 'fredblockMD20';
+ALTDATA(dd).prettylabel = 'all variables';
 
 dd = dd + 1;
-ALTDATA(dd).dataset     = 'fredMD20';
-ALTDATA(dd).prettylabel = 'all variables';
+ALTDATA(dd).dataset     = 'fredblockMD20exYield';
+ALTDATA(dd).prettylabel = 'all variables (ex yields)';
 
 % dd = dd + 1;
 % ALTDATA(dd).dataset     = 'fredMD15plus6M';
@@ -99,19 +99,19 @@ samples(s).evalStop  = datenum(2017,12,1);
 
 m = 0;
 % BASELINE p=12
-% STANDARD
-m = m +  1;
-models(m).resultlabel  = 'standardVAR-RATSbvarshrinkage-p12';
-models(m).prettylabel  = 'standard linear VAR';
-models(m).shortlabel   = 'Standard-p12';
-models(m).fcstType     = 'fcstY';
+% % STANDARD
+% m = m +  1;
+% models(m).resultlabel  = 'standardVAR-RATSbvarshrinkage-p12';
+% models(m).prettylabel  = 'standard linear VAR';
+% models(m).shortlabel   = 'Standard-p12';
+% models(m).fcstType     = 'fcstY';
 
-% SHADOW-RATE
-m = m + 1;
-models(m).resultlabel  = 'ELBsampling-RATSbvarshrinkage-p12';
-models(m).prettylabel  = 'simple shadow-rate VAR';
-models(m).shortlabel   = 'ShadowRateVAR-p12';
-models(m).fcstType     = 'fcstY';
+% % SHADOW-RATE
+% m = m + 1;
+% models(m).resultlabel  = 'ELBsampling-RATSbvarshrinkage-p12';
+% models(m).prettylabel  = 'simple shadow-rate VAR';
+% models(m).shortlabel   = 'ShadowRateVAR-p12';
+% models(m).fcstType     = 'fcstY';
 
 % BLOCK-HYBRID RATE
 m = m + 1;
@@ -185,7 +185,7 @@ for dd = 1 : length(ALTDATA)
 
 
             %% some parameters
-            Nhorizons  = oos0.fcstNhorizons;
+            Nhorizons  = min(oos0.fcstNhorizons,oos1.fcstNhorizons);
 
             %% find common set of variables
             ncode0 = oos0.ncode;
@@ -220,7 +220,7 @@ for dd = 1 : length(ALTDATA)
 
             RMSE0 = sqrt(nanmean(mseloss0,3));
             RMSE1 = sqrt(nanmean(mseloss1,3));
-            relativeRMSE01 =  RMSE1 ./ RMSE0; % here: RMSE
+            relativeRMSE01 =  RMSE1(:,1:Nhorizons) ./ RMSE0(:,1:Nhorizons); % here: RMSE
 
 
             %% MAE
@@ -236,7 +236,7 @@ for dd = 1 : length(ALTDATA)
 
             mae0      = nanmean(maeloss0,3);
             mae1      = nanmean(maeloss1,3);
-            relativeMAD01 = mae1 ./ mae0; % here: RMAE
+            relativeMAD01 = mae1(:,1:Nhorizons) ./ mae0(:,1:Nhorizons); % here: RMAE
 
 
             %% CRPS
@@ -250,7 +250,9 @@ for dd = 1 : length(ALTDATA)
             crpsloss1 = crpsloss1(ndxY1,:,ndxJumpoff);
 
 
-            relativeCRPS01 = nanmean(crpsloss1,3) ./ nanmean(crpsloss0,3); % here: Relative CRPS
+            crps1          = nanmean(crpsloss1,3);
+            crps0          = nanmean(crpsloss0,3);
+            relativeCRPS01 = crps1(:,1:Nhorizons) ./ crps0(:,1:Nhorizons); % here: Relative CRPS
 
             %% compare all
             statlabels = {'RMSE', 'MAE', 'CRPS'};
@@ -418,8 +420,11 @@ if ~doCharts
         abs(dmMADtstat) > norminv(0.95, 0, 1) & (round(relativeMAE01,2) == 1), ...
         abs(dmCRPStstat) > norminv(0.95, 0, 1) & (round(relativeCRPS01,2) == 1));
 
-    fprintf(fid, 'Note: Comparison of ``%s'''' (baseline, in denominator) against ``%s.'''' Values below 1 indicate improvement over baseline. \n', ...
+    fprintf(fid, 'Note: Comparison of ``%s'''' (baseline, in denominator) against ``%s'''' for horizons', ...
         prettylabel0, prettylabel1);
+    fprintf(fid, ' %d, ', theseHorizons(1:end-1));
+    fprintf(fid, 'and %d.\n', theseHorizons(end));
+    fprintf(fid, 'Values below 1 indicate improvement over baseline. \n');
     fprintf(fid, '%s \n', comparisonNote);
 
     fprintf(fid, 'Significance assessed by Diebold-Mariano-West test using Newey-West standard errors with $h + 1$ lags.\n');

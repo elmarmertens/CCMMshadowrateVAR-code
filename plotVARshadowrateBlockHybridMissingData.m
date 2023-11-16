@@ -22,7 +22,7 @@ addpath matlabtoolbox/emstatespace/
 clear; close all; clc;
 
 %% set parameters for VAR and MCMC
-datalabel           = 'fredMD20-2022-09';
+datalabel           = 'fredMD20exYield-2022-09';
 p                   = 12;                  % Number of lags on dependent variables
 
 jumpoffDate         = datenum(2022,8,1);
@@ -31,14 +31,14 @@ doRATSprior        = true;
 
 samStart            = [];                 % truncate start of sample if desired (leave empty if otherwise)
 
-ELBbound            = 0.5;
+ELBbound            = 0.25;
 
 np = 12;
 
 %% process ELB setting
 switch ELBbound
     case .25
-        resultsdir = '~/jam/lager/quantico2023logscoresXL/';
+        resultsdir = '~/jam/lager/QUANTICO/quantico2023logscoresXL/';
         ELBtag    = '';
         ELBlegend = '25 bp';
         switch datalabel

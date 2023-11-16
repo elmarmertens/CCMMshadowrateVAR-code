@@ -15,11 +15,11 @@ addpath matlabtoolbox/emstatespace/
 %% Initial operations
 clear; close all; clc;
 
-datadir = '~/jam/lager/quantico2023';
+datadir = '../matfilesShadowrateVAR/lagerFREDblock';
 
-datalabel = 'fredMD20-2022-09';
-MODELTYPES = {'standardVAR', 'ELBsampling', 'ELBblockhybrid'};
-MODELTYPES = {'ELBblockhybrid'};
+datalabel = 'fredblockMD20exYield-2022-09';
+MODELTYPES = {'standardVAR', 'ELBblockhybrid'};
+% MODELTYPES = {'ELBblockhybrid'};
 
 
 

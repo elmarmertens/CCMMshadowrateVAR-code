@@ -15,36 +15,54 @@ addpath matlabtoolbox/emstatespace/
 %% prep
 clear; close all; clc;
 
-fontsize = 16;
+fontsize = 14;
 
 
-ELBbound = .25;
+ELBbound = .125;
 ELBcolor = Colors4Plots(8);
 
+%% get LSAP dates
+[lsapDates, lsapLabels] = getLSAPdates();
+lsapDates = datenum(lsapDates);
+ndxDropTaper = ~strcmpi(lsapLabels, 'taper begins');
+lsapLabels   = lsapLabels(ndxDropTaper);
+lsapDates    = lsapDates(ndxDropTaper);
 
 
+tailNDX = [1 4]; % [1 4] for 90% or [2 3] for IQR
 
 %% load stuff
 %#ok<*UNRCH>
 
 
-for MODELTYPE = {'ELBsampling', 'ELBblockhybrid'}
+for MODELTYPE = {'ELBblockhybrid'}
 
     modeltype = MODELTYPE{:};
 
 
-    for DATALABEL = {'fredMD20-2022-09'} %  {'fredMD20-2022-09', 'fredMD20exYield-2022-09'}
+    for DATALABEL = {'fredblockMD20-2022-09', 'fredblockMD20exYield-2022-09'}
 
         datalabel = DATALABEL{:};
 
         switch ELBbound
             case .25
-                resultsdir = '~/jam/lager/quantico2023/';
+                resultsdir = '../matfilesShadowrateVAR/lagerFREDblock';
                 ELBtag    = '';
                 ELBlegend = '25 bp';
-                YLIM      = [-12 4]; % set common yaxis limits for all plots
+                switch datalabel
+                    case 'fredblockMD20-2022-09'
+                        YLIM      = [-8 4];
+                    case {'fredMD20exYield-2022-09', 'fredblockMD20exYield-2022-09'}
+                        if strcmpi(modeltype, 'ELBhybrid')
+                            YLIM      = [-8 4];
+                        else
+                            YLIM      = [-30 15];
+                        end
+                    otherwise
+                        YLIM      = [-4 4];
+                end
             case .125
-                resultsdir = '~/jam/lager/quantico2023logscoresELB125/';
+                resultsdir = '../matfilesShadowrateVAR/lagerFREDblock';
                 ELBtag    = '-ELB125';
                 ELBlegend = '12.5 bp';
                 switch datalabel
@@ -52,18 +70,6 @@ for MODELTYPE = {'ELBsampling', 'ELBblockhybrid'}
                         YLIM      = [-8 4];
                     case 'fredMD20exYield-2022-09'
                         YLIM      = [-12 4];
-                    otherwise
-                        YLIM      = [-12 4];
-                end
-            case .5
-                resultsdir = '~/jam/lager/quantico2023logscoresELB500/';
-                ELBtag    = '-ELB500';
-                ELBlegend = '50 bp';
-                switch datalabel
-                    case 'fredMD20-2022-09'
-                        YLIM      = [-8 4];
-                    case 'fredMD20exYield-2022-09'
-                        YLIM      = [-25 5];
                     otherwise
                         YLIM      = [-12 4];
                 end
@@ -128,21 +134,28 @@ for MODELTYPE = {'ELBsampling', 'ELBblockhybrid'}
             set(gca, 'fontsize', fontsize)
 
             hold on
-            hfinal = plotCI(shadowrateVintagesMid(:,n,end), squeeze(shadowrateVintagesTails(:,n,[1 4],end)), ydates, [], 'k-', 'linewidth', 3);
+            hfinal = plotCI(shadowrateVintagesMid(:,n,end), squeeze(shadowrateVintagesTails(:,n,tailNDX,end)), ydates, [], 'k-', 'linewidth', 3);
 
             hqrt      = plot(ydates, shadowrateQRTmid(:,n), 'r-', 'linewidth', 3);
-            hqrttails = plot(ydates, squeeze(shadowrateQRTtails(:,n,[1 4])), 'r-.', 'linewidth', 2);
+            hqrttails = plot(ydates, squeeze(shadowrateQRTtails(:,n,tailNDX)), 'r-.', 'linewidth', 2);
 
 
-            xtickdates(ydates([firstQRTobs end]))
+            % xtickdates(ydates([firstQRTobs end]))
+            xtickdates([datenum(2008,8,1) ydates(end)])
             ylim(YLIM)
-            hELB = yline(ELBbound, '--', 'color', ELBcolor);
-            hl = legend([hfinal hqrt hELB], 'full sample', 'quasi-real time', ELBlegend, 'location', 'best', 'box', 'off');
-            wrapthisfigure(thisfig, sprintf('%s%d-QRTp%d-%s-%s%s', shadowshortlabel, n, p, datalabel, modeltype, ELBtag), wrap)
+            hELB = yline(ELBbound, ':', 'color', ELBcolor);
+            hl = legend([hfinal hqrt hELB], 'full sample', 'quasi-real time', ELBlegend, ...
+                'location', 'northwest', 'box', 'off', 'AutoUpdate', 'off');
+            wrapthisfigure(thisfig, sprintf('%s%d-QRTp%d-%s-%s%s', shadowshortlabel, n, p, datalabel, modeltype, ELBtag), wrap, [], [], [], [], true)
+            hLSAP = xline(lsapDates, '--', lsapLabels, 'fontsize', fontsize, 'LabelVerticalAlignment', 'top', 'LabelHorizontalAlignment', 'center'); 
+            set(hl, 'location', 'southeast', 'box','on');
+            wrapthisfigure(thisfig, sprintf('%s%d-QRTp%d-%s-%s%s-LSAP', shadowshortlabel, n, p, datalabel, modeltype, ELBtag), wrap)
 
-            delete(hqrt); delete(hqrttails); delete(hl);
+            delete(hLSAP); delete(hqrt); delete(hqrttails); delete(hl);
             ylim(YLIM);
-            wrapthisfigure(thisfig, sprintf('%s%d-FINALp%d-%s-%s%s', shadowshortlabel, n, p, datalabel, modeltype, ELBtag), wrap)
+            wrapthisfigure(thisfig, sprintf('%s%d-FINALp%d-%s-%s%s', shadowshortlabel, n, p, datalabel, modeltype, ELBtag), wrap, [], [], [], [], true)
+            hLSAP = xline(lsapDates, '--', lsapLabels, 'fontsize', fontsize, 'LabelVerticalAlignment', 'top', 'LabelHorizontalAlignment', 'center'); %#ok<NASGU>
+            wrapthisfigure(thisfig, sprintf('%s%d-FINALp%d-%s-%s%s-LSAP', shadowshortlabel, n, p, datalabel, modeltype, ELBtag), wrap, [], [], [], [], true)
 
         end
 
@@ -157,21 +170,49 @@ for MODELTYPE = {'ELBsampling', 'ELBblockhybrid'}
         krippnerRate  = krippner.data(:,2);
 
 
+        %% plot QRT vs WUXIA and Krippner
+        n = 1;
+        thisfig = figure;
+        set(gca, 'fontsize', fontsize)
+
+        hold on
+        hfinal = plotCIredshades(shadowrateQRTmid(:,n,end), squeeze(shadowrateQRTtails(:,n,tailNDX,end)), ydates, [], 'r-', 'linewidth', 3);
+
+        % xtickdates(ydates([firstQRTobs end]))
+        xtickdates([datenum(2008,8,1) ydates(end)])
+        hwx = plot(wuxiaDates, wuxiaRate, '-.', 'color', Colors4Plots('lightblue'), 'linewidth', 3);
+        hkrip = plot(krippnerDates, krippnerRate, ':', 'color', Colors4Plots('darkblue'), 'linewidth', 3);
+        ylim(YLIM)
+        hELB = yline(ELBbound, ':', 'color', ELBcolor);
+        hl = legend([hfinal hwx hkrip hELB], 'Shadow-rate VAR', 'Wu-Xia', 'Krippner', ELBlegend, ...
+            'location', 'southeast', 'box', 'off', 'AutoUpdate', 'off');
+        wrapthisfigure(thisfig, sprintf('%s%d-QRTp%d-%s-%s%s-wuxiakrippner', shadowshortlabel, n, p, datalabel, modeltype, ELBtag), wrap, [], [], [], [], true)
+
+        hLSAP = xline(lsapDates, '--', lsapLabels, 'fontsize', fontsize, 'LabelVerticalAlignment', 'top', 'LabelHorizontalAlignment', 'center'); %#ok<NASGU>
+        set(hl, 'location', 'southeast', 'box','on');
+        wrapthisfigure(thisfig, sprintf('%s%d-QRTp%d-%s-%s%s-wuxiakrippner-LSAP', shadowshortlabel, n, p, datalabel, modeltype, ELBtag), wrap)
+
         %% plot FINAL vs WUXI and Krippner
         n = 1;
         thisfig = figure;
         set(gca, 'fontsize', fontsize)
 
         hold on
-        hfinal = plotCI(shadowrateVintagesMid(:,n,end), squeeze(shadowrateVintagesTails(:,n,[1 4],end)), ydates, [], 'k-', 'linewidth', 3);
+        hfinal = plotCI(shadowrateVintagesMid(:,n,end), squeeze(shadowrateVintagesTails(:,n,tailNDX,end)), ydates, [], 'k-', 'linewidth', 3);
 
-        xtickdates(ydates([firstQRTobs end]))
-        hwx = plot(wuxiaDates, wuxiaRate, 'm-.', 'linewidth', 2);
-        hkrip = plot(krippnerDates, krippnerRate, 'b-.', 'linewidth', 2);
+        % xtickdates(ydates([firstQRTobs end]))
+        xtickdates([datenum(2008,8,1) ydates(end)])
+        hwx = plot(wuxiaDates, wuxiaRate, '-.', 'color', Colors4Plots('lightblue'), 'linewidth', 3);
+        hkrip = plot(krippnerDates, krippnerRate, ':', 'color', Colors4Plots('darkblue'), 'linewidth', 3);
         ylim(YLIM)
-        hELB = yline(ELBbound, '--', 'color', ELBcolor);
-        legend([hfinal hwx hkrip hELB], 'Shadow-rate VAR', 'Wu-Xia', 'Krippner', ELBlegend, 'location', 'best', 'box', 'off')
-        wrapthisfigure(thisfig, sprintf('%s%d-FINALp%d-%s-%s%s-wuxiakrippner', shadowshortlabel, n, p, datalabel, modeltype, ELBtag), wrap)
+        hELB = yline(ELBbound, ':', 'color', ELBcolor);
+        hl = legend([hfinal hwx hkrip hELB], 'Shadow-rate VAR', 'Wu-Xia', 'Krippner', ELBlegend, ...
+            'location', 'southeast', 'box', 'off', 'AutoUpdate', 'off');
+        wrapthisfigure(thisfig, sprintf('%s%d-FINALp%d-%s-%s%s-wuxiakrippner', shadowshortlabel, n, p, datalabel, modeltype, ELBtag), wrap, [], [], [], [], true)
+
+        hLSAP = xline(lsapDates, '--', lsapLabels, 'fontsize', fontsize, 'LabelVerticalAlignment', 'top', 'LabelHorizontalAlignment', 'center'); 
+        set(hl, 'location', 'southeast', 'box','on');
+        wrapthisfigure(thisfig, sprintf('%s%d-FINALp%d-%s-%s%s-wuxiakrippner-LSAP', shadowshortlabel, n, p, datalabel, modeltype, ELBtag), wrap)
 
 
         %% tabulate values

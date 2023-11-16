@@ -22,7 +22,7 @@ addpath matlabtoolbox/emstatespace/
 
 %% setup
 
-resultsdir = '~/jam/lager/quantico2023logscoresXL/';
+resultsdir = '../matfilesShadowrateVAR/lagerFREDblock';
 
 doCharts = false;
 doBold   = true; % matter only if doCharts = false;
@@ -30,11 +30,15 @@ doBold   = true; % matter only if doCharts = false;
 % datalabel0   = 'fredMD20';
 % prettylabel0 = 'all variables';
 
-datalabel0   = 'fredMD20exYield';
+datalabel0   = 'fredblockMD20exYield';
 prettylabel0 = 'all variables ex yields';
 
 %% define alternative datasets
 dd = 0;
+
+dd = dd + 1;
+ALTDATA(dd).dataset     = 'fredblockMD20';
+ALTDATA(dd).prettylabel = 'all variables';
 
 % dd = dd + 1;
 % if strcmp(datalabel0, 'fredMD20')
@@ -61,9 +65,9 @@ dd = 0;
 % ALTDATA(dd).dataset     = 'fredMD15plus10Y';
 % ALTDATA(dd).prettylabel = 'FFR plus 10Y (and 14 others)';
 
-dd = dd + 1;
-ALTDATA(dd).dataset     = 'fredMD15plusShortYields';
-ALTDATA(dd).prettylabel = 'FFR plus 6M and 1Y (and 14 others)';
+% dd = dd + 1;
+% ALTDATA(dd).dataset     = 'fredMD15plusShortYields';
+% ALTDATA(dd).prettylabel = 'FFR plus 6M and 1Y (and 14 others)';
 
 % dd = dd + 1;
 % ALTDATA(dd).dataset     = 'fredMD15plusLongYields';
@@ -73,9 +77,9 @@ ALTDATA(dd).prettylabel = 'FFR plus 6M and 1Y (and 14 others)';
 % ALTDATA(dd).dataset     = 'fredMD15plusBAA';
 % ALTDATA(dd).prettylabel = 'FFR plus BAA (and 14 others)';
 
-dd = dd + 1;
-ALTDATA(dd).dataset     = 'fredMD15plusLongYieldsBAA';
-ALTDATA(dd).prettylabel = 'FFR plus 5Y, 10Y, and BAA (and 14 others)';
+% dd = dd + 1;
+% ALTDATA(dd).dataset     = 'fredMD15plusLongYieldsBAA';
+% ALTDATA(dd).prettylabel = 'FFR plus 5Y, 10Y, and BAA (and 14 others)';
 
 %% define samples
 s = 0;
@@ -84,9 +88,9 @@ s = s + 1;
 samples(s).evalStart  = datenum(2009,1,1);
 samples(s).evalStop   = datenum(2022,8,1);
 
-% s = s + 1;
-% samples(s).evalStart = datenum(2009,1,1);
-% samples(s).evalStop  = datenum(2017,12,1);
+s = s + 1;
+samples(s).evalStart = datenum(2009,1,1);
+samples(s).evalStop  = datenum(2017,12,1);
 
 % s = s + 1;
 % samples(s).evalStart = datenum(2010,1,1);
@@ -107,12 +111,12 @@ models(m).prettylabel  = 'standard linear VAR';
 models(m).shortlabel   = 'Standard-p12';
 models(m).fcstType     = 'fcstY';
 
-% SHADOW-RATE
-m = m + 1;
-models(m).resultlabel  = 'ELBsampling-RATSbvarshrinkage-p12';
-models(m).prettylabel  = 'simple shadow-rate VAR';
-models(m).shortlabel   = 'ShadowRateVAR-p12';
-models(m).fcstType     = 'fcstY';
+% % SHADOW-RATE
+% m = m + 1;
+% models(m).resultlabel  = 'ELBsampling-RATSbvarshrinkage-p12';
+% models(m).prettylabel  = 'simple shadow-rate VAR';
+% models(m).shortlabel   = 'ShadowRateVAR-p12';
+% models(m).fcstType     = 'fcstY';
 
 % BLOCK-HYBRID RATE
 m = m + 1;

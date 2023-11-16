@@ -23,12 +23,14 @@ addpath matlabtoolbox/emstatespace/
 
 %% setup
 
-resultsdir = '~/jam/lager/quantico2023logscoresXL/';
+
+resultsdir = '../matfilesShadowrateVAR/lagerFREDblock';
+datalabel  = 'fredblockMD20-2022-09';
+% datalabel  = 'fredblockMD20exYield-2022-09';
 
 doCharts = false;
 doBold   = true; % matter only if doCharts = false;
 
-datalabel = 'fredMD20-2022-09';
 
 for p = 12 % [12 6 3]
 
@@ -109,72 +111,36 @@ for p = 12 % [12 6 3]
     models(m).datalabel    = datalabel;
     models(m).resultlabel  = sprintf('ELBblockhybrid-RATSbvarshrinkage-p%d', p);
     if p == 12
-        models(m).prettylabel  = sprintf('hybrid shadow-rate VAR');
+        models(m).prettylabel  = sprintf('block-hybrid shadow-rate VAR');
     else
-        models(m).prettylabel  = sprintf('hybrid shadow-rate VAR (p=%d)', p);
+        models(m).prettylabel  = sprintf('block-hybrid shadow-rate VAR (p=%d)', p);
     end
     models(m).shortlabel   = sprintf('BlockHybridVAR-p%d', p);
     models(m).fcstType     = 'fcstY';
 
 
-    if strcmpi(datalabel, 'fredMD20-2022-09')
-
-        % BLOCK HYBRID w/Aelb
-        m = m0 +  7;
-        models(m).datalabel    = datalabel;
-        models(m).resultlabel  = sprintf('ELBblockhybridAelbPrec10000-RATSbvarshrinkage-p%d', p);
-        if p == 12
-            models(m).prettylabel  = sprintf('hybrid shadow-rate VAR (A switching)');
-        else
-            models(m).prettylabel  = sprintf('hybrid shadow-rate VAR (A switching, p=%d)', p);
-        end
-        models(m).shortlabel   = sprintf('BlockHybridVARswitchingA10000-p%d', p);
-        models(m).fcstType     = 'fcstY';
-
-        % KRIPPNER
-        m = m0 +  8;
-        models(m).datalabel    = 'fredMD20krippner-2022-09';
-        models(m).resultlabel  = sprintf('standardVAR-RATSbvarshrinkage-p%d', p);
-        if p == 12
-            models(m).prettylabel  = sprintf('Plug-in VAR (Krippner)');
-        else
-            models(m).prettylabel  = sprintf('Plug-in VAR (Krippner, p=%d)', p);
-        end
-        models(m).shortlabel   = sprintf('krippnerVAR-p%d', p);
-        models(m).fcstType     = 'fcstYshadow';
-
-        % WUXIA
-        m = m0 +  9;
-        models(m).datalabel    = 'fredMD20wuxia-2022-09';
-        models(m).resultlabel  = sprintf('standardVAR-RATSbvarshrinkage-p%d', p);
-        if p == 12
-            models(m).prettylabel  = sprintf('Plug-in VAR (WuXia)');
-        else
-            models(m).prettylabel  = sprintf('Plug-in VAR (WuXia, p=%d)', p);
-        end
-        models(m).shortlabel   = sprintf('wuxiaVAR-p%d', p);
-        models(m).fcstType     = 'fcstYshadow';
+    % HYBRID
+    m = m0 +  7;
+    models(m).datalabel    = datalabel;
+    models(m).resultlabel  = sprintf('ELBhybrid-RATSbvarshrinkage-p%d', p);
+    if p == 12
+        models(m).prettylabel  = sprintf('Fully-hybrid VAR');
+    else
+        models(m).prettylabel  = sprintf('Hybrid VAR (p=%d)', p);
     end
+    models(m).shortlabel   = sprintf('hybridVAR-p%d', p);
+    models(m).fcstType     = 'fcstY';
+
 
 
     %% select models
-    if strcmpi(datalabel, 'fredMD20-2022-09')
-        MODELS = {[1 4] [1 6] [4 6] [1 7] [6 7]...
-            [8 1] [9 1] [8 4] [9 4] [8 6] [9 6]
-            };
+    MODELS = {[1 4] [1 6] [4 6] ...
+        [1 7] [7 6] ...
+        };
 
-        MLABELS = {'Linear vs Shadow-rate VAR', 'Linear vs Block-Hybrid VAR', 'Shadow-rate vs Block-Hybrid VAR', 'Linear vs Block-Hybrid A-Switching VAR', 'Block-Hybrid  vs Block-Hybrid A-Switching VAR', ...
-            'Kripper-plug-in vs Linear VAR', 'Wu-Xia-plug-in vs Linear VAR', ...
-            'Kripper-plug-in vs Shadow-rate VAR', 'Wu-Xia-plug-in vs Shadow-rate VAR', ...
-            'Kripper-plug-in vs Block-Hybrid VAR', 'Wu-Xia-plug-in vs Block-Hybrid VAR', ...
-            };
-    else
-        MODELS = {[1 4] [1 6] [4 6] ...
-            };
-
-        MLABELS = {'Linear vs Shadow-rate VAR', 'Linear vs Block-Hybrid VAR', 'Shadow-rate vs Block-Hybrid VAR', ...
-            };
-    end
+    MLABELS = {'Linear vs Shadow-rate VAR', 'Linear vs Block-Hybrid VAR', 'Shadow-rate vs Block-Hybrid VAR',  ...
+        'Linear vs Fully-Hybrid VAR', 'Fully-Hybrid vs Block-Hybrid VAR',  ...
+        };
 
     %% loop over model sets
 
@@ -188,7 +154,7 @@ for p = 12 % [12 6 3]
 
         %% eval window
 
-        for sam = 1 : 4
+        for sam = 1 : 2
 
             switch sam
                 case 1
@@ -254,14 +220,14 @@ for p = 12 % [12 6 3]
                 datestr(dates(1), 'yyyy:mm'), datestr(dates(end), 'yyyy:mm'));
 
 
-            %% some parameters
-            Nhorizons  = oos0.fcstNhorizons;
+            ndxYIELDS = oos0.ndxYIELDS;
 
-            if doCharts
-                Ylabels = fredMDshortlabel(oos0.ncode);
-            else
-                Ylabels = fredMDprettylabel(oos0.ncode);
-            end
+            %% some parameters
+            Nhorizons  = min(oos0.fcstNhorizons,oos1.fcstNhorizons);
+
+            ncode = oos0.ncode;
+
+            Ylabels = fredMDshortlabel(oos0.ncode);
             N       = length(Ylabels);
 
             Ylabels = strrep(Ylabels, '_', '');
@@ -285,7 +251,7 @@ for p = 12 % [12 6 3]
 
             RMSE0 = sqrt(nanmean(mseloss0,3));
             RMSE1 = sqrt(nanmean(mseloss1,3));
-            relativeRMSE01 =  RMSE1 ./ RMSE0; % here: RMSE
+            relativeRMSE01 =  RMSE1(:,1:Nhorizons) ./ RMSE0(:,1:Nhorizons); % here: RMSE
 
 
             %% MAE
@@ -301,7 +267,7 @@ for p = 12 % [12 6 3]
 
             mae0      = nanmean(maeloss0,3);
             mae1      = nanmean(maeloss1,3);
-            relativeMAD01 = mae1 ./ mae0; % here: RMAE
+            relativeMAD01 = mae1(:,1:Nhorizons) ./ mae0(:,1:Nhorizons); % here: RMAE
 
 
             %% CRPS
@@ -315,7 +281,9 @@ for p = 12 % [12 6 3]
             crpsloss1 = crpsloss1(:,:,ndxJumpoff);
 
 
-            relativeCRPS01 = nanmean(crpsloss1,3) ./ nanmean(crpsloss0,3); % here: Relative CRPS
+            crps1          = nanmean(crpsloss1,3);
+            crps0          = nanmean(crpsloss0,3);
+            relativeCRPS01 = crps1(:,1:Nhorizons) ./ crps0(:,1:Nhorizons); % here: Relative CRPS
 
             %% compare all
             statlabels = {'RMSE', 'MAE', 'CRPS'};
@@ -333,7 +301,7 @@ for p = 12 % [12 6 3]
                 maeloss0, maeloss1, relativeMAD01, ...
                 crpsloss0, crpsloss1, relativeCRPS01, ...
                 models(m0).prettylabel, models(m1).prettylabel, ...
-                Ylabels, theseHorizons, tabcaption, statlabels, comparisonNote)
+                Ylabels,  ndxYIELDS, theseHorizons, tabcaption, statlabels, comparisonNote)
 
 
         end
@@ -353,7 +321,7 @@ function compareAllinone(tabname, wrap, doCharts, doBold, ...
     maeloss0, maeloss1, relativeMAE01, ...
     crpsloss0, crpsloss1, relativeCRPS01, ...
     prettylabel0, prettylabel1, ...
-    Ylabels, theseHorizons, tabcaption, statlabels, comparisonNote)
+    Ylabels, ndxYIELDS, theseHorizons, tabcaption, statlabels, comparisonNote)
 
 
 %% parse inputs
@@ -386,11 +354,11 @@ if doCharts
 
 else
     fprintf(fid, '\\begin{center}\n');
-    fprintf(fid, '\\begin{tabular}{l%s}\n', repmat('.4', 1, 3 * Nhorizons));
+    fprintf(fid, '\\begin{tabular}{l%s}\n', repmat('.3', 1, 3 * Nhorizons));
     fprintf(fid, ' & \\multicolumn{%d}{c}{%s}  & \\multicolumn{%d}{c}{%s}  & \\multicolumn{%d}{c}{%s} \\\\ \\cmidrule(lr){%d-%d}\\cmidrule(lr){%d-%d}\\cmidrule(lr){%d-%d} \n', ...
         Nhorizons, statlabels{1}, Nhorizons, statlabels{2}, Nhorizons, statlabels{3}, ...
         1+1,1+Nhorizons,1+Nhorizons+1,1+2*Nhorizons,1+2*Nhorizons+1, 1+3*Nhorizons);
-    fprintf(fid, 'Variable / Horizon ');
+    % fprintf(fid, 'Variable / Horizon ');
 end
 for h = 1 : Nhorizons
     fprintf(fid, '& \\multicolumn{1}{c}{$%d$} ', theseHorizons(h));
@@ -404,7 +372,21 @@ end
 fprintf(fid, '\\\\\n');
 fprintf(fid, '\\midrule\n');
 for n = 1 : N
-    fprintf(fid, '%s ', Ylabels{n});
+
+    if doCharts
+        if ismember(n, ndxYIELDS)
+            fprintf(fid, '\\textbf<3,4>{%s} ', Ylabels{n});
+        else
+            fprintf(fid, '\\textbf<2>{%s} ', Ylabels{n});
+        end
+        if ismember(n, ndxYIELDS)
+            fprintf(fid, '\\uncover<4->{');
+        else
+            fprintf(fid, '\\uncover<5->{');
+        end
+    else
+        fprintf(fid, '%s ', Ylabels{n});
+    end
     for h = 1 : Nhorizons
         if isfinite(relativeRMSE01(n,h))
             if doCharts
@@ -471,7 +453,11 @@ for n = 1 : N
             fprintf(fid, '& -.- ');
         end
     end
+    if doCharts
+        fprintf(fid, '}'); % close uncover
+    end
     fprintf(fid, '\\\\\n');
+
 end
 fprintf(fid, '\\bottomrule\n');
 fprintf(fid, '\\end{tabular}\n');
@@ -485,8 +471,11 @@ if ~doCharts
         abs(dmMADtstat) > norminv(0.95, 0, 1) & (round(relativeMAE01,2) == 1), ...
         abs(dmCRPStstat) > norminv(0.95, 0, 1) & (round(relativeCRPS01,2) == 1));
 
-    fprintf(fid, 'Note: Comparison of ``%s'''' (baseline, in denominator) against ``%s.'''' Values below 1 indicate improvement over baseline. \n', ...
+    fprintf(fid, 'Note: Comparison of ``%s'''' (baseline, in denominator) against ``%s'''' for horizons', ...
         prettylabel0, prettylabel1);
+    fprintf(fid, ' %d, ', theseHorizons(1:end-1));
+    fprintf(fid, 'and %d.\n', theseHorizons(end));
+    fprintf(fid, 'Values below 1 indicate improvement over baseline. \n');
     fprintf(fid, '%s \n', comparisonNote);
 
     fprintf(fid, 'Significance assessed by Diebold-Mariano-West test using Newey-West standard errors with $h + 1$ lags.\n');

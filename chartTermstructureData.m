@@ -3,6 +3,7 @@
 %#ok<*NOSEL>
 %#ok<*DISPLAYPROG>
 %#ok<*UNRCH>
+%#ok<*DATNM>
 
 %% load em toolboxes
 warning('off','MATLAB:handle_graphics:exceptions:SceneNode')
@@ -192,7 +193,7 @@ wrapthisfigure(this, sprintf('alldata%s-WITHLEGENDTITLE', 'TERMSTRUCTURE'), wrap
 
 
 %% RECENT
-sam = ydates >= datenum(2019,1,1);
+sam = ydates >= datenum(2019,1,1); 
 this = figure;
 hold on
 hFFR = plot(ydates(sam), data(sam,ndxFFR),  'linewidth', 2);

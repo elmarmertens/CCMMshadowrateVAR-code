@@ -20,22 +20,26 @@ addpath matlabtoolbox/emstatespace/
 
 %% setup
 
-resultsdir = '~/jam/lager/quantico2023logscoresXL';
-
+% resultsdir = '~/jam/lager2/QUANTICO/quantico2023logscoresXL';
+resultsdir = '../matfilesShadowrateVAR/lagerFREDblock';
 doDateTicks = true;
 doCumulate  = false;
 doOutcomes  = false;
 
-datalabel = 'fredMD20-2022-09'; %#ok<*NASGU>
-% datalabel = 'fredMD20exYield-2022-09';
-% datalabel = 'fredMD15plusLongYieldsBAA-2022-09';
-% datalabel = 'fredMD15plusShortYields-2022-09';
+datalabel = 'fredblockMD20-2022-09'; %#ok<*NASGU>
+% datalabel = 'fredblockMD20exYield-2022-09'; %#ok<*NASGU>
 
-
+%% get LSAP dates
+[lsapDates, lsapLabels] = getLSAPdates();
+lsapDates = datenum(lsapDates);
+ndxDropTaper = ~strcmpi(lsapLabels, 'taper begins');
+lsapLabels   = lsapLabels(ndxDropTaper);
+lsapDates    = lsapDates(ndxDropTaper);
 
 %% list of models
+m = 0;
 % STANDARD
-m = 1;
+m = m + 1;
 models(m).datalabel    = datalabel; %#ok<*SAGROW>
 models(m).resultlabel  = 'standardVAR-RATSbvarshrinkage-p12';
 models(m).prettylabel  = 'Standard VAR';
@@ -43,26 +47,17 @@ models(m).shortlabel   = 'StandardVAR';
 models(m).fcstType     = 'fcstY';
 models(m).hasShadow     = false;
 
-% SHADOW-RATE
-m = 2;
-models(m).datalabel    = datalabel; %#ok<*SAGROW>
-models(m).resultlabel  = 'ELBsampling-RATSbvarshrinkage-p12';
-models(m).prettylabel  = 'Simple shadow-rate VAR';
-models(m).shortlabel   = 'ShadowRate';
-models(m).fcstType     = 'fcstY';
-models(m).hasShadow     = true;
-
-% % BLOCK-HYBRID
-% m = 3;
+% % SHADOW-RATE
+% m = m + 1;
 % models(m).datalabel    = datalabel; %#ok<*SAGROW>
-% models(m).resultlabel  = 'ELBblockhybrid-RATSbvarshrinkage-p12';
-% models(m).prettylabel  = 'Hybrid VAR';
-% models(m).shortlabel   = 'HybridVAR';
+% models(m).resultlabel  = 'ELBsampling-RATSbvarshrinkage-p12';
+% models(m).prettylabel  = 'Simple shadow-rate VAR';
+% models(m).shortlabel   = 'ShadowRate';
 % models(m).fcstType     = 'fcstY';
-% models(m).hasShadow     = false;
+% models(m).hasShadow     = true;
 
-% BLOCK-HYBRID-YIELDS
-m = 3;
+% BLOCK-HYBRID
+m = m + 1;
 models(m).datalabel    = datalabel; %#ok<*SAGROW>
 models(m).resultlabel  = 'ELBblockhybrid-RATSbvarshrinkage-p12';
 models(m).prettylabel  = 'Hybrid shadow-rate VAR';
@@ -122,7 +117,7 @@ tcode   = mat0.tcode;
 %     maturities  = [3 6 12 24];
 % end
 
-maturities  = 12; % [3 6 12 24]; % 12;
+maturities  = 12; % [12 24]; % [3 6 12 24]; % 12;
 
 Nmaturities = length(maturities);
 
@@ -130,7 +125,7 @@ ndxFFR  = find(strcmpi(ncode, 'FEDFUNDS'));
 setShadowYields
 Nshadowrates = length(ndxSHADOWRATE);
 
-%% some parameters
+%% collect data
 Nmodels = length(models);
 avgFFR  = NaN(Njumpoffs, Nmaturities, Nshadowrates, Nmodels);
 
@@ -199,17 +194,18 @@ for doPreCOVID = [true false]
     end
 
     h = NaN(length(models),1);
-    LineStyleOrder = {'-.','-', ':'};
-    newcolors = [0 0.4470 0.7410
-        1 0 0
-        0 0 0
-        0.9290 0.6940 0.1250
-        0.4940 0.1840 0.5560
-        0.3010 0.7450 0.9330
-        0.6350 0.0780 0.1840];
+    LineStyleOrder = {':','-.', '-'};
+    % newcolors = [0 0.4470 0.7410
+    %     1 0 0
+    %     0 0 0
+    %     0.9290 0.6940 0.1250
+    %     0.4940 0.1840 0.5560
+    %     0.3010 0.7450 0.9330
+    %     0.6350 0.0780 0.1840];
+    LineColors = Colors4Plots([8 1 7]);
+    LineWidths ={4, 4, 3};
 
-
-    for nn = 1 : length(ndxSHADOWRATE)
+    for nn = 1 % : length(ndxSHADOWRATE)
 
 
 
@@ -219,27 +215,35 @@ for doPreCOVID = [true false]
             hold on
 
             for mm = 1 : length(models)
-                h(mm) = plot(dates, squeeze(avgFFR(:,hh,nn,mm)), 'linewidth', 3, 'linestyle', LineStyleOrder{mm});
+                h(mm) = plot(dates, squeeze(avgFFR(:,hh,nn,mm)), 'linewidth', LineWidths{mm}, ...
+                    'color', LineColors{mm}, 'linestyle', LineStyleOrder{mm});
+                if mm == 3
+                    uistack(h(mm),'bottom')
+                end
             end
-            if nn == 1
-                ylim([-12 10])
-            else
-                ylim([-5 5])
-            end
-            colororder(newcolors)
+            ylim([-5 5])
+            
             set(gca, 'fontsize', fontsize)
             xticks(tickdates)
             xtickdates(dates(sam), 'keepticks')
             
-            plotOrigin
+            % plotOrigin
             wrapthisfigure(thisfig, sprintf('avg%s-%s-%s-h%d%s', ncode{ndxSHADOWRATE(nn)}, models(m0).datalabel, 'TRIPLE', maturities(hh), sampleLabel), wrap, [], [], [], [], true)
 
-            legend(h, {models.prettylabel}, 'location', 'best', 'box', 'on')
-            wrapthisfigure(thisfig, sprintf('avg%s-%s-%s-h%d%s-WITHLEGEND', ncode{ndxSHADOWRATE(nn)}, models(m0).datalabel, 'TRIPLE', maturities(hh), sampleLabel), wrap, [], [], [], [], true)
+            hl = legend(h, {models.prettylabel}, 'location', 'northwest', 'box', 'on', 'AutoUpdate', 'off');
+            wrapthisfigure(thisfig, sprintf('avg%s-%s-%s-h%d%s-WITHLEGEND', ncode{ndxSHADOWRATE(nn)}, models(m0).datalabel, 'TRIPLE', maturities(hh), sampleLabel), wrap, [], [], [], [], false)
 
-            title(sprintf('%s (h=%d)', Ylabels{ndxSHADOWRATE(nn)}, maturities(hh)))
-            wrapthisfigure(thisfig, sprintf('avg%s-%s-%s-h%d%s-WITHTITLE', ncode{ndxSHADOWRATE(nn)}, models(m0).datalabel, 'TRIPLE', maturities(hh), sampleLabel), wrap, [], [], [], [], false)
-
+            % if doPreCOVID
+            %     ylim([-4 4])
+            % else
+            %     ylim([-5 10])
+            % end
+            % hLSAP = xline(lsapDates, '--', lsapLabels, 'fontsize', fontsize, 'LabelVerticalAlignment', 'top', 'LabelHorizontalAlignment', 'center');
+            % set(hl, 'location', 'southeast', 'box','on');
+            % wrapthisfigure(thisfig, sprintf('avg%s-%s-%s-h%d%s-LSAP-WITHLEGEND', ncode{ndxSHADOWRATE(nn)}, models(m0).datalabel, 'TRIPLE', maturities(hh), sampleLabel), wrap, [], [], [], [], true)
+            % 
+            % title(sprintf('%s (h=%d)', Ylabels{ndxSHADOWRATE(nn)}, maturities(hh)))
+            % wrapthisfigure(thisfig, sprintf('avg%s-%s-%s-h%d%s-WITHTITLE', ncode{ndxSHADOWRATE(nn)}, models(m0).datalabel, 'TRIPLE', maturities(hh), sampleLabel), wrap, [], [], [], [], false)
         end
     end
 
@@ -261,7 +265,7 @@ for doPreCOVID = [true false]
                 xtickdates(dates(sam), 'keepticks')
 
                 wrapthisfigure(thisfig, sprintf('fcst%s-%s-%s-h%d%s', ncode{nn}, models(m0).datalabel, 'TRIPLE', maturities(hh), sampleLabel), wrap, [], [], [], [], true)
-                legend([h; hr(1)], {models.prettylabel, 'realized'}, 'location', 'best', 'box', 'on')
+                legend([h; hr(1)], {models.prettylabel, 'realized'}, 'location', 'southeast', 'box', 'on')
                 wrapthisfigure(thisfig, sprintf('fcst%s-%s-%s-h%d%s-WITHLEGEND', ncode{nn}, models(m0).datalabel, 'TRIPLE', maturities(hh), sampleLabel), wrap, [], [], [], [], true)
 
                 title(sprintf('%s (h=%d)', Ylabels{nn}, maturities(hh)))
