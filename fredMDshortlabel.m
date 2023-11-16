@@ -38,8 +38,14 @@ for n = 1 : length(ncode)
             pcode{n} = 'PPI (Fin.)';
         case 'PPICMM'
             pcode{n} = 'PPI (Metals)';
+        case 'DSERRA3M086SBEA'
+            pcode{n} = 'PCE Services Cons.';
+        case 'DSERRG3M086SBEA'
+            pcode{n} = 'PCE Services Prices';
         case 'PCEPI'
             pcode{n} = 'PCE Prices';
+        case 'PCEPILFE'
+            pcode{n} = 'PCE Core Prices';
         case 'CPIAUCSL'
             pcode{n} = 'CPI';
         case 'FEDFUNDS'
@@ -54,10 +60,10 @@ for n = 1 : length(ncode)
             pcode{n} = 'S\&P 500';
         case 'EXUSUKx'
             pcode{n} = 'USD / GBP';
-            case 'TB6MS'
-                pcode{n} = '6m Tbill';
-            case 'BAA'
-                pcode{n} = 'BAA Yld';
+        case 'TB6MS'
+            pcode{n} = '6m Tbill';
+        case 'BAA'
+            pcode{n} = 'BAA Yld';
         case 'GS1'
             pcode{n} = '1y Trsy';
         case 'GS5'
@@ -68,6 +74,9 @@ for n = 1 : length(ncode)
             pcode{n} = '20y Trsy';
         case 'BAAFFM'
             pcode{n} = 'Baa Sprd';
+        case 'EXCESSBONDPREMIUM'
+            pcode{n} = 'EBP';
+
         otherwise
             pcode{n}= ncode{n};
     end % switch

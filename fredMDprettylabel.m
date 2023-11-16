@@ -42,8 +42,14 @@ if doShort
                 pcode{n} = 'PPI (Fin. Goods)';
             case 'PPICMM'
                 pcode{n} = 'PPI (Metals)';
+            case 'DSERRA3M086SBEA'
+                pcode{n} = 'PCE Services Cons.';               
+            case 'DSERRG3M086SBEA'
+                pcode{n} = 'PCE Services Prices';               
             case 'PCEPI'
                 pcode{n} = 'PCE Prices';
+            case 'PCEPILFE'
+                pcode{n} = 'PCE Core Prices';
             case 'CPIAUCSL'
                 pcode{n} = 'CPI';
             case 'FEDFUNDS'
@@ -101,8 +107,14 @@ else
                 pcode{n} = 'PPI: Finished Goods';
             case 'PPICMM'
                 pcode{n} = 'PPI: Metals and metal products';
+            case 'DSERRA3M086SBEA'
+                pcode{n} = 'Personal Cons. Expend. Services: Chain Quantity Index';               
+            case 'DSERRG3M086SBEA'
+                pcode{n} = 'Personal Cons. Expend. Services: Chain Price Index';               
             case 'PCEPI'
-                pcode{n} = 'Personal Cons. Expend.: Chain Index';
+                pcode{n} = 'Personal Cons. Expend.: Chain Price Index';
+            case 'PCEPILFE'
+                pcode{n} = 'Personal Cons. Expend. Less Fodd and Energy: Chain Price Index';
             case 'CPIAUCSL'
                 pcode{n} = 'CPI';
             case 'FEDFUNDS'
