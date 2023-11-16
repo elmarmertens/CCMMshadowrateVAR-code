@@ -23,7 +23,7 @@ The default data file is `fredMD20baa-2022-09.csv` (based on the 2022-09 vintage
 
 - The code requires a recent version of Matlab (we used Matlab versions 2019a-2021a) including access to Matlab’s Statistics and Machine Learning Toolbox. The codes employ `parfor` loops that are executed in parallel when a `parpool` has been created in Matlab, which requires availability of the Matlab Parallel Computing Toolbox (otherwise the loops will be executed sequentially).
 
-- The main directory contains a bash script `gobatch.sh` that can be used to launch a sequence of multiple Matlab scripts from the shell. The Matlab scripts are executed in sequence *and in separate Matlab sessions*. Each Matlab session opens a parallel pool. For example, the shell command `sh gobatch.sh goVAR.m goVARsimpleshadowrate.m goVARhybridshadowrate.m` will launch a command line session of Matlab, start a parallel pool, and then execute `goVAR.m`; once `goVAR.m` has been executed, the Matlab sessions closes, a new one is reopened for execution of `goVARsimpleshadowrate.m` etc. (The shell script supports as many command line arguments as supported by bash and has been written for use on macOS and Linux.) Alternatively, Matlab scripts can, of course, equally be called interactively on the Matlab GUI’s command line.
+- The main directory contains a bash script `gobatch.sh` that can be used to launch a sequence of multiple Matlab scripts from the shell. The Matlab scripts are executed in sequence *and in separate Matlab sessions*. Each Matlab session opens a parallel pool. For example, the shell command `sh gobatch.sh goVAR.m goVARshadowrateBlockHybrid.m goVARhybrid.m` will launch a command line session of Matlab, start a parallel pool, and then execute `goVAR.m`; once `goVAR.m` has been executed, the Matlab sessions closes, a new one is reopened for execution of `goVARshadowrateBlockHybrid.m` etc. (The shell script supports as many command line arguments as supported by bash and has been written for use on macOS and Linux.) Alternatively, Matlab scripts can, of course, equally be called interactively on the Matlab GUI’s command line.
 
 - To execute individual models for a given sample, use scripts called `do*.m`. To launch out-of-sample runs for a given model, consider scripts called `go*.m`. After computing the out-of-sample runs each of these `go*.m` scripts stores results for further post-processing in a `*.mat` file. To produce forecst comparison tables, please use Matlab scripts called `oosEvaluationTables.m`, which assume that previously stored `*.mat` files are stored in a directory indicated at the beginning of each of theses scripts.  
 
@@ -31,12 +31,12 @@ The default data file is `fredMD20baa-2022-09.csv` (based on the 2022-09 vintage
 
 To produce quasi-real estiamtes
 - `goVAR.m` for the standard linear VAR
-- `goVARshadowrate.m` for the simple shadow-rate VAR (as described in the paper)
-- `goVARshadowrateBlockHybrid.m` for the hybrid shadow-rate VAR (as described in the paper)
+- `goVARshadowrateBlockHybrid.m` for the block-hybrid shadow-rate VAR (as described in the paper)
+- `goVARhybrid.m` for the fully-hybrid shadow-rate VAR (as described in the paper)
 
 ## Other
-- `doVARshadowrateMissingData.m` and `doVARshadowrateBlockHybridMissingData.m` provide estimates (from simple and hybrid shadow-rate VARs) for a single data sample, with and without imposing the ELB onto the missing-data problem of the shadow-rate sample and producing comparison figures as shown in paper and supplementary appendix
+- `doVARshadowrateBlockHybridMissingData.m` provides estimates  for a single data sample, with and without imposing the ELB onto the missing-data problem of the shadow-rate sample and producing comparison figures as shown in paper and supplementary appendix
 - `oosEvaluationTables2023.m` produces forecast comparison tables based on output stored by the `goVAR*shadowrate.m` scripts
 - `showQRTshadow2023.m` produces figures of shadow-rate estimates (full-sample and quasi-real-time) based on output stored by the `goVAR*shadowrate.m` scripts
 - `showPAIchanges.m` produces comparison figures of VAR transition coefficients
-- `doGIRFlinear.m`, `doGIRFshadowrate.m`, and `doGIRFshadowrateBlockHybrid.m`, produce full-sample MCMC estimates of each model, and then perform GIRF simulations. These `doGIRF*.m` can also be used to merely run the MCMC procedures, and continue with the GIRF analysis at a later stage (or for additional dates) using the analogously named `generateGIRF*.m` scripts. To produce plots use `plotGIRF.m` (to compare hybird VAR outputs at different dates) and `plotGIRF2.m` (to compare GIRFS obtained from different models). The figures shown in the paper were produced with `prettyplotGIRF.m`.
+- `doMCMClinear.m`, `doMCMCshadowrateBlockHybrid.m`, and `doMCMChybrid.m`, produce full-sample MCMC estimates of each model. To create IRF, run the analogously named `generateGIRF*.m` scripts. To produce plots use `prettyplotGIRF.m`.
