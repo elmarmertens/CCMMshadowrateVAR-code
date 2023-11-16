@@ -13,6 +13,8 @@ function [PAI_all, PHI_all, invA_all, sqrtht_all, shadowrate_all, missingrate_al
     IRF1scale, IRFcumcode, ...
     yrealized, fcstNdraws, fcstNhorizons, rndStream, doprogress)
 
+    % stackAccept, ...
+
 
 if nargin < 23
     doprogress = false;
@@ -182,6 +184,9 @@ elbT       = max(0,T - elbT0);
 
 if hasELBdata
 
+    if doELBsampling
+        elb.Nproposals     = 1e3;
+    end
     elb.gibbsburn      = 1e2;
     elb.ndxS           = ismember(1:N, ndxSHADOWRATE);
 
@@ -212,14 +217,6 @@ if hasELBdata
     % encode "prior" over initial conditions (which are fixed)
     elb.X0  = X(elbT0+1,:)'; % time zero values of state. Recall that X already contains lagged values
 
-    % construct state vector for ELB state space
-    dummy           = Ydata;
-    dummy(YdataNaN) = NaN;
-    dummy(:,ndxSHADOWRATE) = NaN; % to ignore all information about a actual or shadow rate
-    elb.X   = ones(1+N*p,elbT);
-    for l=0:p-1
-        elb.X(1+N*l+(1:N),:) = dummy(p+elbT0-l+(1:elbT),1:N)'; % note: T0 indexes into data after cutting out p lags
-    end
 end
 
 %% -----------------Prior hyperparameters for bvar model
@@ -303,7 +300,9 @@ if doprogress
     progressbar(0);
 end
 m = 0;
-
+countELBaccept       = 0;
+countELBacceptBurnin = 0;
+stackAccept = NaN(MCMCdraws,1);
 while m < MCMCreps % using while, not for loop to allow going back in MCMC chain
 
     if m == 0
@@ -403,9 +402,7 @@ while m < MCMCreps % using while, not for loop to allow going back in MCMC chain
         % adjust obs for lagged actual rates
         PAIactual                     = PAI(ndxSHADOWRATELAGS,:);
         PAIactual(:,~actualrateBlock) = 0;
-        Yhatactual = Xactual(elbT0+1:end,ndxSHADOWRATELAGS) * PAIactual;
-        elb.Y      = elb.Y - Yhatactual';
-
+        Yhatactual = transpose(Xactual(elbT0+1:end,ndxSHADOWRATELAGS) * PAIactual);
 
         % update VAR companion form
         PAIshadow                                    = PAI;
@@ -419,17 +416,63 @@ while m < MCMCreps % using while, not for loop to allow going back in MCMC chain
         elb.sqrtSigma = sqrtht(elbT0+1:end,:)';
 
 
+        elbYgibbs           = elb.Y;
+        elb.Y(elb.yNaN)     = NaN; % missing values
+
+        %% PS setup
+        pai0    = transpose(PAIshadow(1,:)) + Yhatactual;
+        pai3    = reshape(transpose(PAIshadow(2:end,:)), N, N, p);
+        invbbb  = A_ ./ permute(elb.sqrtSigma, [1 3 2]);
+        elbY0   = reshape(elb.X0(2:end), N, p);
+        if m == 1
+            [~, CC, QQ, RR1, arows, acols, asortndx, brows, bcols, bsortndx] = VARTVPSVprecisionsamplerNaN(pai3,invbbb,elb.Y,elb.yNaN,elbY0,pai0,rndStream);
+        end
 
         % b) reconstruct Y and X
         shadowYdata = Ydata;
         if doELBsampling
 
-            shadowrate = gibbsdrawShadowrates(elb.Y, elb.X0, elb.ndxS, elb.sNaN, p, elb.A, elb.B, elb.sqrtSigma, ...
-                elb.bound, 1, elb.gibbsburn, rndStream);
+            if m < MCMCburnin * .5
+                shadowrate = gibbsdrawShadowrates(elbYgibbs, elb.X0, Yhatactual, elb.ndxS, elb.sNaN, p, elb.A, elb.B, elb.sqrtSigma, ...
+                    elb.bound, 1, elb.gibbsburn, rndStream);
+            else % try acceptance sampling
+                YYdraws = VARTVPSVprecisionsamplerNaN(pai3,invbbb,elb.Y,elb.yNaN,...
+                    elbY0,pai0,rndStream, ...
+                    CC, QQ, RR1, arows, acols, asortndx, brows, bcols, bsortndx, elb.Nproposals);
+                YYdraws = reshape(YYdraws, N, elbT, elb.Nproposals);
+
+                shadowrateProposals = YYdraws(ndxSHADOWRATE,:,:);
+
+                Ok = false;
+                ndxAccept = 0;
+                while ~Ok && (ndxAccept < elb.Nproposals)
+                    ndxAccept = ndxAccept + 1;
+                    thisProposal = shadowrateProposals(:,:,ndxAccept);
+                    Ok = all(thisProposal(elb.sNaN) < ELBbound);
+                end
+                if Ok
+                    shadowrate     = shadowrateProposals(:,:,ndxAccept);
+                    if m > MCMCburnin
+                        countELBaccept = countELBaccept + 1;
+                        stackAccept(m-MCMCburnin) = ndxAccept;
+                    else
+                        countELBacceptBurnin = countELBacceptBurnin + 1;
+                    end
+                else
+                    shadowrate = gibbsdrawShadowrates(elbYgibbs, elb.X0, Yhatactual, elb.ndxS, elb.sNaN, p, elb.A, elb.B, elb.sqrtSigma, ...
+                        elb.bound, 1, elb.gibbsburn, rndStream);
+                    % fprintf('%d, none accepted\n', m);
+                end
+            end
+
+
 
             if doELBsampleAlternate
-                missingrate = gibbsdrawShadowrates(elb.Y, elb.X0, elb.ndxS, elb.sNaN, p, elb.A, elb.B, elb.sqrtSigma, ...
-                    [], 1, elb.gibbsburn, rndStream);
+                YYdraws = VARTVPSVprecisionsamplerNaN(pai3,invbbb,elb.Y,elb.yNaN,...
+                    elbY0,pai0,rndStream, ...
+                    CC, QQ, RR1, arows, acols, asortndx, brows, bcols, bsortndx);
+                YYdraws = reshape(YYdraws, N, elbT);
+                missingrate = YYdraws(ndxSHADOWRATE,:);
             else
                 missingrate = NaN;
             end
@@ -437,13 +480,18 @@ while m < MCMCreps % using while, not for loop to allow going back in MCMC chain
             shadowYdata(p+elbT0+1:end,ndxSHADOWRATE) = shadowrate';
         else
 
-            missingrate = gibbsdrawShadowrates(elb.Y, elb.X0, elb.ndxS, elb.sNaN, p, elb.A, elb.B, elb.sqrtSigma, ...
-                [], 1, elb.gibbsburn, rndStream);
+            YYdraws = VARTVPSVprecisionsamplerNaN(pai3,invbbb,elb.Y,elb.yNaN,...
+                elbY0,pai0,rndStream, ...
+                CC, QQ, RR1, arows, acols, asortndx, brows, bcols, bsortndx);
+            YYdraws = reshape(YYdraws, N, elbT);
+            missingrate = YYdraws(ndxSHADOWRATE,:);
+
+
 
             if doELBsampleAlternate
                 shadowrate = NaN;
             else
-                shadowrate = gibbsdrawShadowrates(elb.Y, elb.X0, elb.ndxS, elb.sNaN, p, elb.A, elb.B, elb.sqrtSigma, ...
+                shadowrate = gibbsdrawShadowrates(elb.Y, elb.X0, Yhatactual, elb.ndxS, elb.sNaN, p, elb.A, elb.B, elb.sqrtSigma, ...
                     elb.bound, 1, elb.gibbsburn, rndStream);
             end
 
@@ -688,7 +736,9 @@ if doIRF1
 
 end
 
-fcstYdraws = reshape(fcstYdraws, N, fcstNhorizons, fcstNdraws);
+if ~isempty(fcstYdraws)
+    fcstYdraws = reshape(fcstYdraws, N, fcstNhorizons, fcstNdraws);
+end
 fcstYhat   = mean(fcstYdraws,3);
 
 if doLogscores
@@ -697,7 +747,11 @@ if doLogscores
     fcstLogscoreIdraws         = reshape(fcstLogscoreIdraws, fcstNdraws, 1);
 end
 
-fprintf('DONE with thisT %d, TID %d \n', thisT, TID)
+if doELBsampling
+    fprintf('DONE with thisT %d, TID %d (countELBaccept = %d / %d, countELBacceptBurnin = %d / %d ) \n', thisT, TID, countELBaccept, MCMCdraws, countELBacceptBurnin, MCMCburnin)
+else
+    fprintf('DONE with thisT %d, TID %d \n', thisT, TID)
+end
 
 return
 

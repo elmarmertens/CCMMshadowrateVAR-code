@@ -139,7 +139,7 @@ setMinnesotaMean
 
 %% allocate memory for out-of-sample forecasts
 
-fcstNhorizons     = 24;  % number of steps forecasted (1:fcstNhorizon)
+fcstNhorizons     = 48;  % number of steps forecasted (1:fcstNhorizon)
 
 % fcstYdraws        = NaN(N,fcstNhorizons,fcstNdraws,Njumpoffs);
 fcstYrealized     = NaN(N,fcstNhorizons,Njumpoffs);

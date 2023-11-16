@@ -238,10 +238,10 @@ while m < MCMCreps % using while, not for loop to allow going back in MCMC chain
         % weighted regression to get Z'Z and Z'z (in Cogley-Sargent 2005 notation)
         y_spread_adj = RESID(:,ii)./sqrtht(:,ii);
         X_spread_adj = RESID(:,1 : ii - 1) ./ sqrtht(:,ii); % note: use of implicit vector expansion
-        
-        ZZ=X_spread_adj'*X_spread_adj; 
+
+        ZZ=X_spread_adj'*X_spread_adj;
         Zz=X_spread_adj'*y_spread_adj;
-        
+
         % computing posteriors moments
         thisNareg         = (ii-1);
         iValpha_post      = ZZ + OMEGA_A_inv(1:thisNareg,1:thisNareg,ii);
@@ -317,13 +317,13 @@ while m < MCMCreps % using while, not for loop to allow going back in MCMC chain
                     fcstA(ndxfcstY, :)          = PAI';
 
                     %% linear forecast sim
-                    fcstX0                      = Xjumpoff;
+                    fcstX0                          = Xjumpoff;
 
-                    fcstXdraws                  = ltitr(fcstA, fcstB, nushocks', fcstX0); % faster forecast simulation using ltitr
+                    fcstXdraws                      = ltitr(fcstA, fcstB, nushocks', fcstX0); % faster forecast simulation using ltitr
                     fcstYdraws(:,:,nn,thisMCMCdraw) = fcstXdraws(2:end,ndxfcstY)';
 
                     %% d) predictive logscores (one step ahead)
-                    muX          = fcstA * fcstX0;
+                    muX          = fcstA * Xjumpoff;
                     muY          = muX(ndxfcstY);
                     sqrtOmegaY   = invA_ * diag(fcstSVdraws(:,1));
 
@@ -399,18 +399,23 @@ end %end of the Gibbs sampler
 
 fcstYhatRB     = mean(yhatdraws,3);
 
-fcstYdraws                 = reshape(fcstYdraws, N, fcstNhorizons, fcstNdraws);
-fcstYhat                   = mean(fcstYdraws,3);
+if ~isempty(fcstYdraws)
+    fcstYdraws = reshape(fcstYdraws, N, fcstNhorizons, fcstNdraws);
+    fcstYhat                   = mean(fcstYdraws,3);
 
-fcstYshadowDraws           = fcstYdraws;
-shadowrateDraws            = fcstYshadowDraws(ndxYIELDS,:,:);
-ndx                        = shadowrateDraws < ELBbound;
-shadowrateDraws(ndx)       = ELBbound;
-fcstYshadowDraws(ndxYIELDS,:,:)  = shadowrateDraws;
-fcstYshadowHat             = mean(fcstYshadowDraws,3);
+    fcstYshadowDraws           = fcstYdraws;
+    shadowrateDraws            = fcstYshadowDraws(ndxYIELDS,:,:);
+    ndx                        = shadowrateDraws < ELBbound;
+    shadowrateDraws(ndx)       = ELBbound;
+    fcstYshadowDraws(ndxYIELDS,:,:)  = shadowrateDraws;
+    fcstYshadowHat             = mean(fcstYshadowDraws,3);
 
-fcstYcensorDraws           = reshape(fcstYcensorDraws, N, fcstNhorizons, fcstNdraws);
-fcstYcensorHat             = mean(fcstYcensorDraws,3);
+    fcstYcensorDraws           = reshape(fcstYcensorDraws, N, fcstNhorizons, fcstNdraws);
+    fcstYcensorHat             = mean(fcstYcensorDraws,3);
+else
+    fcstYhat       = [];
+    fcstYcensorHat = [];
+end
 
 fcstLogscoreDraws          = reshape(fcstLogscoreDraws, fcstNdraws, 1);
 fcstLogscoreELBdraws       = reshape(fcstLogscoreELBdraws, fcstNdraws, 1);

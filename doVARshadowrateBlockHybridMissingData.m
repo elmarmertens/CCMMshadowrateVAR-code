@@ -17,6 +17,7 @@ addpath matlabtoolbox/emtexbox/
 addpath matlabtoolbox/emgibbsbox/
 addpath matlabtoolbox/emeconometrics/
 addpath matlabtoolbox/emstatespace/
+addpath matlabtoolbox/empbsbox/
 
 %% Initial operations
 clear; close all; clc;
@@ -29,7 +30,7 @@ if getparpoolsize < Nworker
 end
 
 %% set parameters for VAR and MCMC
-datalabel           = 'fredMD20-2022-09';
+datalabel           = 'fredblockMD20-2022-09';
 p                   = 12;                  % Number of lags on dependent variables
 check_stationarity  = 0;                  % Truncate nonstationary draws? (1=yes)
 
@@ -129,7 +130,7 @@ fcstNdraws        = 10 * MCMCdraws; % draws sampled from predictive density
 
 
 %% start latexwrapper to collect results
-modellabel = 'HybridShadowVsMissingRateSampling';
+modellabel = 'BlockHybridShadowVsMissingRateSampling';
 
 if doRATSprior
     modellabel = strcat(modellabel, '-RATSbvarshrinkage');
@@ -154,7 +155,7 @@ T     = thisT - p;
 
 shadowrate_all  = Composite(Nworker); %#ok<NASGU>
 missingrate_all = Composite(Nworker); %#ok<NASGU>
-VMAdraws        = Composite(Nworker); %#ok<NASGU>
+% VMAdraws        = Composite(Nworker); %#ok<NASGU>
 SV_all          = Composite(Nworker); %#ok<NASGU>
 
 spmd(Nworker)
@@ -188,32 +189,32 @@ spmd(Nworker)
 
     % simulate VMA
 
-    Kbvar       = 1 + N * p;
-    % prepare companion and impulse matrix
-    ndxY         = 1+(1:N);
-
-    comp0                                = zeros(1 + N * p);
-    comp0(1,1)                           = 1; % intercept
-    comp0(1 + N + 1 : end,1+(1:N*(p-1))) = eye(N*(p-1));
-
-    vma0         = zeros(1+N*p,N);
-    vma0(1,:)    = 1;
-    vma0(ndxY,:) = eye(N);
-    VMAdraws = NaN(N,N,fcstNhorizons,MCMCdraws);
-
-    for m = 1 : MCMCdraws
-
-        thisPAI      = squeeze(PAI_all(m,:,:));
-
-        comp = comp0;
-        comp(ndxY,:) = thisPAI(1:Kbvar,:)';
-        %     offelbMaxlambdas(m) = max(abs(eig(comp(2:end,2:end))));
-        comppow = vma0;
-        for h = 1 : fcstNhorizons
-            comppow           = comp * comppow;
-            VMAdraws(:,:,h,m) = comppow(ndxY,1:N);
-        end
-    end
+    % Kbvar       = 1 + N * p;
+    % % prepare companion and impulse matrix
+    % ndxY         = 1+(1:N);
+    % 
+    % comp0                                = zeros(1 + N * p);
+    % comp0(1,1)                           = 1; % intercept
+    % comp0(1 + N + 1 : end,1+(1:N*(p-1))) = eye(N*(p-1));
+    % 
+    % vma0         = zeros(1+N*p,N);
+    % vma0(1,:)    = 1;
+    % vma0(ndxY,:) = eye(N);
+    % VMAdraws = NaN(N,N,fcstNhorizons,MCMCdraws);
+    % 
+    % for m = 1 : MCMCdraws
+    % 
+    %     thisPAI      = squeeze(PAI_all(m,:,:));
+    % 
+    %     comp = comp0;
+    %     comp(ndxY,:) = thisPAI(1:Kbvar,:)';
+    %     %     offelbMaxlambdas(m) = max(abs(eig(comp(2:end,2:end))));
+    %     comppow = vma0;
+    %     for h = 1 : fcstNhorizons
+    %         comppow           = comp * comppow;
+    %         VMAdraws(:,:,h,m) = comppow(ndxY,1:N);
+    %     end
+    % end
 
 end
 
@@ -260,9 +261,9 @@ for n = 1 : Nshadowrates
     h3 = plot(thesedates, missingrateMid(:,n), 'r-.', 'linewidth', 3);
     h3b = plot(thesedates, squeeze(missingrateTails(:,n,[1 4])), 'r-', 'linewidth', 2);
     legend([h0 h3], 'shadow-rate sampling', 'missing-data sampling', 'location', 'best')
-    ylim([-8 4])
+    % ylim([-8 4])
     srlim = ylim;
-    wrapthisfigure(thisfig, sprintf('hybridshadowrate%d-vs-missingrate-%s%s', n, datalabel, ELBtag), wrap)
+    wrapthisfigure(thisfig, sprintf('blockhybridshadowrate%d-vs-missingrate-%s%s', n, datalabel, ELBtag), wrap)
 
 
     % missing-data draw comparison
@@ -275,11 +276,11 @@ for n = 1 : Nshadowrates
     plothorzline(ELBbound, [], 'k--')
     xtickdates(thesedates)
     ylim(srlim)
-    wrapthisfigure(thisfig, sprintf('hybridshadowrate%d-vs-missingrate-MissingDataSampling-%s%s-step1', n, datalabel, ELBtag), wrap)
+    wrapthisfigure(thisfig, sprintf('blockhybridshadowrate%d-vs-missingrate-MissingDataSampling-%s%s-step1', n, datalabel, ELBtag), wrap)
     h1 = plot(thesedates, missingrateMid(:,n), 'r-', 'linewidth', 3);
     plot(thesedates, squeeze(missingrateTails(:,n,[1 4])), 'r-', 'linewidth', 2)
     legend([h1 h3], 'shadow-rate VAR', 'missing-data VAR', 'location', 'best')
-    wrapthisfigure(thisfig, sprintf('hybridshadowrate%d-vs-missingrate-MissingDataSampling-%s%s', n, datalabel, ELBtag), wrap)
+    wrapthisfigure(thisfig, sprintf('blockhybridshadowrate%d-vs-missingrate-MissingDataSampling-%s%s', n, datalabel, ELBtag), wrap)
 
 
 end
@@ -325,7 +326,7 @@ for n = 1  :  N
     %     sgtitle(sprintf('%s equation (medians)', Ylabels{n}))
 
 
-    wrapthisfigure(thisfig, sprintf('hybrid-%s%s-PAI-%s', datalabel, ELBtag, ncode{n}), wrap)
+    wrapthisfigure(thisfig, sprintf('blockhybrid-%s%s-PAI-%s', datalabel, ELBtag, ncode{n}), wrap)
 
 end
 
@@ -339,7 +340,7 @@ xlabel('Shadow-rate VAR coeffs ')
 ylabel('Missing-rate VAR coeffs')
 title('all intercepts')
 
-wrapthisfigure(thisfig, sprintf('hybrid-%s%s-interceptPAI', datalabel, ELBtag), wrap)
+wrapthisfigure(thisfig, sprintf('blockhybrid-%s%s-interceptPAI', datalabel, ELBtag), wrap)
 
 
 %% scatter of all
@@ -357,14 +358,14 @@ ylabel('Missing-rate VAR')
 
 
 h45 = plot(xlim, ylim, 'k--');
-wrapthisfigure(thisfig, sprintf('hybrid-%s%s-missing-vs-shadow-allPAI', datalabel, ELBtag), wrap)
+wrapthisfigure(thisfig, sprintf('blockhybrid-%s%s-missing-vs-shadow-allPAI', datalabel, ELBtag), wrap)
 
 legend([hlag, hint, h45], 'Lag coefficients', 'Intercepts', '45 degrees', ...
     'box', 'off', 'location', 'northwest')
-wrapthisfigure(thisfig, sprintf('hybrid-%s%s-missing-vs-shadow-allPAI-WITHLEGEND', datalabel, ELBtag), wrap)
+wrapthisfigure(thisfig, sprintf('blockhybrid-%s%s-missing-vs-shadow-allPAI-WITHLEGEND', datalabel, ELBtag), wrap)
 
 title(sprintf('R^2 = %4.2f', scatter.rsqr))
-wrapthisfigure(thisfig, sprintf('hybrid-%s%s-missing-vs-shadow-allPAI-withR2', datalabel, ELBtag), wrap)
+wrapthisfigure(thisfig, sprintf('blockhybrid-%s%s-missing-vs-shadow-allPAI-withR2', datalabel, ELBtag), wrap)
 
 stdabsresid = abs(scatter.resid); % / sqrt(scatter.sige);
 [~, sortndx] = sort(stdabsresid);
@@ -385,14 +386,14 @@ ylabel('Missing-rate VAR')
 
 
 h45 = plot(xlim, ylim, 'k--');
-wrapthisfigure(thisfig, sprintf('hybrid-%s%s-missing-vs-shadow-PAIlag', datalabel, ELBtag), wrap)
+wrapthisfigure(thisfig, sprintf('blockhybrid-%s%s-missing-vs-shadow-PAIlag', datalabel, ELBtag), wrap)
 
 % legend([hlag, hint, h45], 'Lag coefficients', 'Intercepts', '45 degrees', ...
 %     'box', 'off', 'location', 'northwest')
-wrapthisfigure(thisfig, sprintf('hybrid-%s%s-missing-vs-shadow-PAIlag-WITHLEGEND', datalabel, ELBtag), wrap)
+wrapthisfigure(thisfig, sprintf('blockhybrid-%s%s-missing-vs-shadow-PAIlag-WITHLEGEND', datalabel, ELBtag), wrap)
 
 title(sprintf('R^2 = %4.2f', scatter.rsqr))
-wrapthisfigure(thisfig, sprintf('hybrid-%s%s-missing-vs-shadow-PAIlag-withR2', datalabel, ELBtag), wrap)
+wrapthisfigure(thisfig, sprintf('blockhybrid-%s%s-missing-vs-shadow-PAIlag-withR2', datalabel, ELBtag), wrap)
 
 
 %% standardized PAI changes
@@ -425,7 +426,7 @@ colorbar
 colormap turbo
 set(gca, 'fontsize', 12)
 view(-20,67)
-wrapthisfigure(thisfig, sprintf('hybrid-%s%s-ELBPAIall', datalabel, ELBtag), wrap);
+wrapthisfigure(thisfig, sprintf('blockhybrid-%s%s-ELBPAIall', datalabel, ELBtag), wrap);
 
 
 
@@ -487,9 +488,9 @@ for n = 1 : N
     hMissing = plot(thesedates, missingSVmid(ELBjumpoff-p:end,n), 'k--', 'linewidth', 2);
 
     xtickdates(thesedates)
-    wrapthisfigure(thisfig, sprintf('hybrid-%s%s-missing-vs-shadow-SVmid-%s', datalabel, ELBtag,  ncode{n}), wrap)
+    wrapthisfigure(thisfig, sprintf('blockhybrid-%s%s-missing-vs-shadow-SVmid-%s', datalabel, ELBtag,  ncode{n}), wrap)
     legend([hShadow hMissing], 'Shadow-rate VAR', 'Missing-rate VAR', 'box', 'on', 'location', 'best')
-    wrapthisfigure(thisfig, sprintf('hybrid-%s%s-missing-vs-shadow-SVmid-%s-WITHLEGEND', datalabel, ELBtag, ncode{n}), wrap)
+    wrapthisfigure(thisfig, sprintf('blockhybrid-%s%s-missing-vs-shadow-SVmid-%s-WITHLEGEND', datalabel, ELBtag, ncode{n}), wrap)
 
 
 

@@ -1,4 +1,4 @@
-function shadowrateDraws = gibbsdrawShadowrates(Y, STATE0, ndxS, sNaN, p, A, B, SVol, elbBound, Ndraws, burnin, rndStream)
+function shadowrateDraws = gibbsdrawShadowrates(Y, STATE0, YHAT0, ndxS, sNaN, p, C, Psi, SVol, elbBound, Ndraws, burnin, rndStream, showProgress)
 % GIBBSDRAWSHADOWRATES ...
 %
 %   ...
@@ -15,14 +15,17 @@ function shadowrateDraws = gibbsdrawShadowrates(Y, STATE0, ndxS, sNaN, p, A, B, 
 %% process arguments
 
 
-if nargin < 10 || isempty(Ndraws)
+if nargin < 11 || isempty(Ndraws)
     Ndraws = 1;
 end
-if nargin < 11 || isempty(burnin)
+if nargin < 12 || isempty(burnin)
     burnin = 0;
 end
-if nargin < 12
+if nargin < 13
     rndStream = getDefaultStream;
+end
+if nargin < 14
+    showProgress = false;
 end
 
 [Ny,T] = size(Y);
@@ -40,32 +43,31 @@ NNstate = Nstate + 1; % with    intercept
 
 Nx            = Ny - Ns;
 ndxX          = ~ndxS;
-C             = zeros(Ns + Nx,NNstate);
-C(:,1+(1:Ny)) = eye(Ny);
+H             = zeros(Ns + Nx,NNstate);
+H(:,1+(1:Ny)) = eye(Ny);
 
-Nw  = size(B,2);
+Nw  = size(Psi,2);
 if Nw ~= Ny
     error('dimension mismatch');
 end
 
-Bsvol = zeros(Ny, Nw, T);
-bb    = B(1+(1:Ny),:); % w/o constant
+PSIt = zeros(Ny, Nw, T);
+psi  = Psi(1+(1:Ny),:); % w/o constant
 for t = 1 : T
-    Bsvol(:,:,t) = bb * diag(SVol(:,t));
+    PSIt(:,:,t) = psi * diag(SVol(:,t));
 end
-
 
 %% prepare smoothing weights
 J                  = NaN(Ns, Nstate + Nx, T);
 sqrtOmegaPosterior = NaN(Ns,Ns,T);
 
-aa             = A(2:end,2:end); % drop constant
-Apowerp        = NaN(Nstate, Nstate, p+1);
-Apowerp(:,:,1) = eye(Nstate);
+cc             = C(2:end,2:end); % drop constant
+Cpowerp        = NaN(Nstate, Nstate, p+1);
+Cpowerp(:,:,1) = eye(Nstate);
 for k = 1 : p
-    Apowerp(:,:,k+1) = aa * Apowerp(:,:,k);
+    Cpowerp(:,:,k+1) = cc * Cpowerp(:,:,k);
 end
-Apowerp = Apowerp(:,1:Ny,:);
+Cpowerp = Cpowerp(:,1:Ny,:);
 
 
 % smoothing weights
@@ -75,10 +77,10 @@ for t = 1 : T-p
         % prepare M
         M                                    = zeros(Nstate + Nw, Nw * (p + 1));
         for j = 0 : p
-            M(1 : Nstate, Nw * j + (1 : Nw)) = Apowerp(:,:,p+1-j) * Bsvol(:,:,t+j);
+            M(1 : Nstate, Nw * j + (1 : Nw)) = Cpowerp(:,:,p+1-j) * PSIt(:,:,t+j);
         end
-        M(Nstate + (1 : Nx), 1 : Nw)         = Bsvol(ndxX,:,t);
-        M(Nstate + Nx + 1 : end, 1 : Nw)     = Bsvol(ndxS,:,t);
+        M(Nstate + (1 : Nx), 1 : Nw)         = PSIt(ndxX,:,t);
+        M(Nstate + Nx + 1 : end, 1 : Nw)     = PSIt(ndxS,:,t);
         
         
         % perform qr
@@ -107,16 +109,16 @@ while t < T
         
         thisM                               = zeros(Nsignal + Ns, Nsignal + Ns);
         for j = 0 : k
-            thisM(1 : Nsignal, Nw * j + (1 : Nw)) = Apowerp(1:Nsignal,:,k+1-j) * Bsvol(:,:,t+j);
+            thisM(1 : Nsignal, Nw * j + (1 : Nw)) = Cpowerp(1:Nsignal,:,k+1-j) * PSIt(:,:,t+j);
         end
-        thisM(k * Ny + (1 : Nx), 1 : Nw)    = Bsvol(ndxX,:,t);
-        thisM(Nsignal + 1 : end, 1 : Nw)    = Bsvol(ndxS,:,t);
+        thisM(k * Ny + (1 : Nx), 1 : Nw)    = PSIt(ndxX,:,t);
+        thisM(Nsignal + 1 : end, 1 : Nw)    = PSIt(ndxS,:,t);
         
         [~,R] = qr(thisM');
         R     = R';
         
         sqrtSigma                      = R(1 : Nsignal, 1 : Nsignal);
-        J(:,:,t)                       = 0;
+        J(:,:,t)                       = 0; % whacks out dummy values for future states used below
         J(:, Ny * (p - k) + 1 : end,t) = R(Nsignal + (1:Ns), 1 : Ny * k + Nx) / sqrtSigma; % "live values" at bottom of state vector
         sqrtOmegaPosterior(:,:,t)      = R(Nsignal + (1:Ns), Nsignal + (1:Ns));
         
@@ -143,9 +145,24 @@ if Ns > 1
 end
 
 %% prepare further state-space objects
-CAA   = C * A;
-AApp1 = A^(p+1); % including constant
-AApp1 = AApp1(2:end,:); % dropping constant
+
+Cex1 = C(2:end,2:end);
+Hex1 = eye(Ny,Nstate);
+
+
+HC    = Hex1 * Cex1;
+CCpp1 = Cex1^(p+1); % including constant
+
+%% compute deterministic state
+Y0 = zeros(Ny,T);
+for t = 1 : T
+    Y0(:,t) = H * STATE0;
+    if ~isempty(YHAT0)
+        Y0(:,t) = Y0(:,t) + YHAT0(:,t);
+    end
+    STATE0  = C * STATE0;
+end
+Ytilde = Y - Y0;
 
 %% Gibbs draws
 totalNdraws = burnin + Ndraws;
@@ -157,26 +174,32 @@ else
 end
 
 
-% progressbar(0)
+
+if showProgress
+    progressbar(0)
+end
 for n = 1 : totalNdraws
     
     % init t = 1
-    STATElag        = STATE0;
-    YY              = cat(2, Y, zeros(Ny, p)); % padded (dummy) values to compute STATEfuture below
+    STATElag        = zeros(Nstate,1); 
+
+    % prepare construction of STATE vector
+    YY      = cat(2, Ytilde, zeros(Ny, p)); % padded (dummy) values to compute STATEfuture below
     
     for t = 1 : T
         
         if any(sNaN(:,t))
             
-            Yhat           = CAA * STATElag;
-            Xresid         = Y(ndxX,t) - Yhat(ndxX);
-            Shat           = Yhat(ndxS);
+            Yhat            = HC * STATElag;
+            Xresid          = Ytilde(ndxX,t) - Yhat(ndxX);
             
-            STATEfuturehat = AApp1 * STATElag;
-            STATEfuture    = YY(:,t+p:-1:t+1); % using zeros as dummy values for t + k > T
-            STATEtilde     = STATEfuture(:) - STATEfuturehat;
-            Sposterior     = Shat + J(:,:,t) * [STATEtilde; Xresid]; % note: could adapt to t > T - p
-            
+            STATEfuture     = YY(:,t+p:-1:t+1); % using zeros as dummy values for t + k > T, whacked out by J=0
+            STATEfuturehat  = CCpp1 * STATElag;
+            STATEtilde      = STATEfuture(:) - STATEfuturehat;
+
+            Shat            = Yhat(ndxS) + Y0(ndxS,t);
+            Sposterior      = Shat + J(:,:,t) * [STATEtilde; Xresid]; % note: could adapt to t > T - p
+
             if isempty(elbBound)
                 S(:,t) = Sposterior + sqrtOmegaPosterior(:,:,t) * zdraws(:,t,n);
             else
@@ -197,20 +220,18 @@ for n = 1 : totalNdraws
             end
             
             
-            Y(ndxS,t) = S(:,t); % note: future values in YY need
-                                % not be updated here
+            Y(ndxS,t)   = S(:,t); % note: future values in YY need not be updated here, since we are looping forward
+            Ytilde(:,t) = Y(:,t) - Y0(:,t);
             
         end % any(sNaN(:,t))
         
         % update (even if not(sNaN))
         if t >= p
-            % this code is quicker than the implementation for ...
-            % t < p, used in the else clause below
-            this            = Y(:,t:-1:t-p+1);
-            STATElag(2:end) = this(:);
+            this            = Ytilde(:,t:-1:t-p+1);
+            STATElag        = this(:);
         else
-            statelag = STATElag(1 + (1 : Ny * (p - 1)));
-            STATElag = cat(1, 1, Y(:,t), statelag);
+            this     = STATElag(1 : Ny * (p - 1));
+            STATElag = cat(1, Ytilde(:,t), this);
         end
     end % for t
     
@@ -218,7 +239,9 @@ for n = 1 : totalNdraws
         shadowrateDraws(:,:,n-burnin) = S;
     end
     
-    %     progressbar(n / (totalNdraws))
+    if showProgress
+        progressbar(n / (totalNdraws))
+    end
 end
 
 

@@ -29,7 +29,7 @@ if getparpoolsize < Nworker
 end
 
 %% set parameters for VAR and MCMC
-datalabel           = 'fredMD20-2022-09';
+datalabel           = 'fredblockMD20-2022-09';
 p                   = 12;                  % Number of lags on dependent variables
 check_stationarity  = 0;                  % Truncate nonstationary draws? (1=yes)
 

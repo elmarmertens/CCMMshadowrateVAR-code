@@ -157,7 +157,7 @@ missingrateVintagesTails = NaN(length(ydates), Nshadowrates, 4, Njumpoffs);
 
 %% allocate memory for out-of-sample forecasts
 
-fcstNhorizons     = 24;  % number of steps forecasted (1:fcstNhorizon)
+fcstNhorizons     = 48;  % number of steps forecasted (1:fcstNhorizon)
 
 % fcstYdraws        = NaN(N,fcstNhorizons,fcstNdraws,Njumpoffs);
 fcstYrealized     = NaN(N,fcstNhorizons,Njumpoffs);
@@ -514,7 +514,7 @@ firstQRTobs = find(ydates <= datenum(2008,12,1), 1, 'last'); % find(~isnan(shado
 shadowrateQRTmid   = NaN(length(ydates),Nshadowrates);
 shadowrateQRTtails = NaN(length(ydates),Nshadowrates,4);
 for v = 1 : Nvin
-    ndx = find(~isnan(shadowrateVintagesMid(:,1,v)),1, 'last'); % note: sufficient to check only for firt yield
+    ndx = find(~isnan(shadowrateVintagesMid(:,1,v)),1, 'last'); % note: sufficient to check only for first yield
     if ~isnan(shadowrateQRTmid(ndx))
         error houston
     end

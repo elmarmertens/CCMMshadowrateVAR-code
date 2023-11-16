@@ -221,14 +221,6 @@ if hasELBdata
     % encode "prior" over initial conditions (which are fixed)
     elb.X0  = X(elbT0+1,:)'; % time zero values of state. Recall that X already contains lagged values
 
-    % construct state vector for ELB state space
-    dummy           = Ydata;
-    dummy(YdataNaN) = NaN;
-    dummy(:,ndxSHADOWRATE) = NaN; % to ignore all information about a actual or shadow rate
-    elb.X   = ones(1+N*p,elbT);
-    for l=0:p-1
-        elb.X(1+N*l+(1:N),:) = dummy(p+elbT0-l+(1:elbT),1:N)'; % note: T0 indexes into data after cutting out p lags
-    end
 
 else
     error('switching Aelb not yet implemented to work w/o ELB obs')
@@ -431,8 +423,7 @@ while m < MCMCreps % using while, not for loop to allow going back in MCMC chain
         % adjust obs for lagged actual rates
         PAIactual                     = PAI(ndxSHADOWRATELAGS,:);
         PAIactual(:,~actualrateBlock) = 0;
-        Yhatactual = Xactual(elbT0+1:end,ndxSHADOWRATELAGS) * PAIactual;
-        elb.Y      = elb.Y - Yhatactual';
+        Yhatactual = transpose(Xactual(elbT0+1:end,ndxSHADOWRATELAGS) * PAIactual);
 
 
         % update VAR companion form
@@ -457,11 +448,11 @@ while m < MCMCreps % using while, not for loop to allow going back in MCMC chain
         shadowYdata = Ydata;
         if doELBsampling
 
-            shadowrate = gibbsdrawShadowratesB3(elb.Y, elb.X0, elb.ndxS, elb.sNaN, p, elb.A, elb.B, elb.sqrtSigma, ...
+            shadowrate = gibbsdrawShadowratesB3(elb.Y, elb.X0, Yhatactual, elb.ndxS, elb.sNaN, p, elb.A, elb.B, elb.sqrtSigma, ...
                 elb.bound, 1, elb.gibbsburn, rndStream);
 
             if doELBsampleAlternate
-            missingrate = gibbsdrawShadowratesB3(elb.Y, elb.X0, elb.ndxS, elb.sNaN, p, elb.A, elb.B, elb.sqrtSigma, ...
+            missingrate = gibbsdrawShadowratesB3(elb.Y, elb.X0, Yhatactual, elb.ndxS, elb.sNaN, p, elb.A, elb.B, elb.sqrtSigma, ...
                     [], 1, elb.gibbsburn, rndStream);
             else
                 missingrate = NaN;
@@ -470,13 +461,13 @@ while m < MCMCreps % using while, not for loop to allow going back in MCMC chain
             shadowYdata(p+elbT0+1:end,ndxSHADOWRATE) = shadowrate';
         else
 
-            missingrate = gibbsdrawShadowratesB3(elb.Y, elb.X0, elb.ndxS, elb.sNaN, p, elb.A, elb.B, elb.sqrtSigma, ...
+            missingrate = gibbsdrawShadowratesB3(elb.Y, elb.X0, Yhatactual, elb.ndxS, elb.sNaN, p, elb.A, elb.B, elb.sqrtSigma, ...
                 [], 1, elb.gibbsburn, rndStream);
 
             if doELBsampleAlternate
                 shadowrate = NaN;
             else
-            shadowrate = gibbsdrawShadowratesB3(elb.Y, elb.X0, elb.ndxS, elb.sNaN, p, elb.A, elb.B, elb.sqrtSigma, ...
+            shadowrate = gibbsdrawShadowratesB3(elb.Y, elb.X0, Yhatactual, elb.ndxS, elb.sNaN, p, elb.A, elb.B, elb.sqrtSigma, ...
                     elb.bound, 1, elb.gibbsburn, rndStream);
             end
 
@@ -738,7 +729,9 @@ if doIRF1
 
 end
 
-fcstYdraws = reshape(fcstYdraws, N, fcstNhorizons, fcstNdraws);
+if ~isempty(fcstYdraws)
+    fcstYdraws = reshape(fcstYdraws, N, fcstNhorizons, fcstNdraws);
+end
 fcstYhat   = mean(fcstYdraws,3);
 
 if doLogscores

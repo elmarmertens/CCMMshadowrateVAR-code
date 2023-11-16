@@ -166,9 +166,7 @@ elbT       = max(0,T - elbT0);
 if hasELBdata
 
     if doELBsampling
-        elb.Nproposals     = 10;
-    else
-        elb.Nproposals     = 1; % missingrates only
+        elb.Nproposals     = 100;
     end
     elb.gibbsburn      = 1e2;
     elb.ndxS           = ismember(1:N, ndxSHADOWRATE);
@@ -200,14 +198,6 @@ if hasELBdata
     % encode "prior" over initial conditions (which are fixed)
     elb.X0  = X(elbT0+1,:)'; % time zero values of state. Recall that X already contains lagged values
 
-    % construct state vector for ELB state space
-    dummy           = Ydata;
-    dummy(YdataNaN) = NaN;
-    dummy(:,ndxSHADOWRATE) = NaN; % to ignore all information about a actual or shadow rate
-    elb.X   = ones(1+N*p,elbT);
-    for l=0:p-1
-        elb.X(1+N*l+(1:N),:) = dummy(p+elbT0-l+(1:elbT),1:N)'; % note: T0 indexes into data after cutting out p lags
-    end
 end
 
 %% -----------------Prior hyperparameters for bvar model
@@ -291,7 +281,8 @@ if doprogress
     progressbar(0);
 end
 m = 0;
-countELBaccept = 0;
+countELBaccept       = 0;
+countELBacceptBurnin = 0;
 stackAccept = NaN(MCMCdraws,1);
 while m < MCMCreps % using while, not for loop to allow going back in MCMC chain
 
@@ -344,10 +335,10 @@ while m < MCMCreps % using while, not for loop to allow going back in MCMC chain
         % weighted regression to get Z'Z and Z'z (in Cogley-Sargent 2005 notation)
         y_spread_adj = RESID(:,ii)./sqrtht(:,ii);
         X_spread_adj = RESID(:,1 : ii - 1) ./ sqrtht(:,ii); % note: use of implicit vector expansion
-        
-        ZZ=X_spread_adj'*X_spread_adj; 
+
+        ZZ=X_spread_adj'*X_spread_adj;
         Zz=X_spread_adj'*y_spread_adj;
-        
+
         % computing posteriors moments
         thisNareg         = (ii-1);
         iValpha_post      = ZZ + OMEGA_A_inv(1:thisNareg,1:thisNareg,ii);
@@ -397,40 +388,65 @@ while m < MCMCreps % using while, not for loop to allow going back in MCMC chain
         elbYgibbs           = elb.Y;
         elb.Y(elb.yNaN)     = NaN; % missing values
 
-        if m > MCMCburnin
+        %% PS setup
+        pai0    = transpose(PAI(1,:));
+        pai3    = reshape(transpose(PAI(2:end,:)), N, N, p);
+        invbbb  = A_ ./ permute(elb.sqrtSigma, [1 3 2]);
+        elbY0   = reshape(elb.X0(2:end), N, p);
+        if m == 1
+            [~, CC, QQ, RR1, arows, acols, asortndx, brows, bcols, bsortndx] = VARTVPSVprecisionsamplerNaN(pai3,invbbb,elb.Y,elb.yNaN,elbY0,pai0,rndStream);
+        end
 
-            XXdraws             = stateABnanDraws(elb.A, elb.B, elb.ndxY, elb.Y, elb.yNaN, elb.X0, elb.sqrtSigma, elb.Nproposals, rndStream);
-            xdraws              = XXdraws(elb.ndxY,:,:);
-            shadowrateProposals = xdraws(ndxSHADOWRATE,:,:);
+        %% sampling
+        if doELBsampling
 
-            Ok = false;
-            ndxAccept = 0;
-            while ~Ok && (ndxAccept < elb.Nproposals)
-                ndxAccept = ndxAccept + 1;
-                thisProposal = shadowrateProposals(:,:,ndxAccept);
-                Ok = all(thisProposal(elb.sNaN) < ELBbound);
-            end
-            if Ok
-                shadowrate     = shadowrateProposals(:,:,ndxAccept);
-                countELBaccept = countELBaccept + 1;
-                stackAccept(m-MCMCburnin) = ndxAccept;
-            else
-                shadowrate = gibbsdrawShadowrates(elbYgibbs, elb.X0, elb.ndxS, elb.sNaN, p, elb.A, elb.B, elb.sqrtSigma, ...
-                    elb.bound, 1, elb.gibbsburn, rndStream);
-            end
-            missingrate = shadowrateProposals(:,:,1);
-
-        else
-
-            if doELBsampling
-                shadowrate = gibbsdrawShadowrates(elbYgibbs, elb.X0, elb.ndxS, elb.sNaN, p, elb.A, elb.B, elb.sqrtSigma, ...
+            if m < MCMCburnin * .5
+                shadowrate = gibbsdrawShadowrates(elbYgibbs, elb.X0, [], elb.ndxS, elb.sNaN, p, elb.A, elb.B, elb.sqrtSigma, ...
                     elb.bound, 1, elb.gibbsburn, rndStream);
                 missingrate = NaN;
-            else
-                missingrate = gibbsdrawShadowrates(elbYgibbs, elb.X0, elb.ndxS, elb.sNaN, p, elb.A, elb.B, elb.sqrtSigma, ...
-                    [], 1, elb.gibbsburn, rndStream);
-                shadowrate = NaN;
+            else % try acceptance sampling
+                YYdraws = VARTVPSVprecisionsamplerNaN(pai3,invbbb,elb.Y,elb.yNaN,...
+                    elbY0,pai0,rndStream, ...
+                    CC, QQ, RR1, arows, acols, asortndx, brows, bcols, bsortndx, elb.Nproposals);
+                YYdraws = reshape(YYdraws, N, elbT, elb.Nproposals);
+
+                shadowrateProposals = YYdraws(ndxSHADOWRATE,:,:);
+
+                Ok = false;
+                ndxAccept = 0;
+                while ~Ok && (ndxAccept < elb.Nproposals)
+                    ndxAccept = ndxAccept + 1;
+                    thisProposal = shadowrateProposals(:,:,ndxAccept);
+                    Ok = all(thisProposal(elb.sNaN) < ELBbound);
+                end
+                if Ok
+                    shadowrate     = shadowrateProposals(:,:,ndxAccept);
+                    if m > MCMCburnin
+                        countELBaccept = countELBaccept + 1;
+                        stackAccept(m-MCMCburnin) = ndxAccept;
+                    else
+                        countELBacceptBurnin = countELBacceptBurnin + 1;
+                    end
+                else
+                    shadowrate = gibbsdrawShadowrates(elbYgibbs, elb.X0, [], elb.ndxS, elb.sNaN, p, elb.A, elb.B, elb.sqrtSigma, ...
+                        elb.bound, 1, elb.gibbsburn, rndStream);
+                    % fprintf('%d, none accepted\n', m);
+                end
+                missingrate = shadowrateProposals(:,:,1);
             end
+
+
+            if any(shadowrate(elb.sNaN) > ELBbound)
+                warning('sampling truncated MVN did not work')
+            end
+        else
+            YYdraw = VARTVPSVprecisionsamplerNaN(pai3,invbbb,elb.Y,elb.yNaN,...
+                elbY0,pai0,rndStream, ...
+                CC, QQ, RR1, arows, acols, asortndx, brows, bcols, bsortndx);
+            YYdraw = reshape(YYdraw, N, elbT);
+            missingrate = YYdraw(ndxSHADOWRATE,:);
+            shadowrate = NaN;
+
         end
 
 
@@ -484,7 +500,7 @@ while m < MCMCreps % using while, not for loop to allow going back in MCMC chain
 
 
             %% compute OOS draws
-            
+
 
             if doPredictiveDensity
 
@@ -512,7 +528,7 @@ while m < MCMCreps % using while, not for loop to allow going back in MCMC chain
 
                     fcstXdraws                      = ltitr(fcstA, fcstB, theseShocks', fcstX0); % faster forecast simulation using ltitr
                     fcstYdraws(:,:,nn,thisMCMCdraw) = fcstXdraws(2:end,ndxfcstY)';
-                 
+
                     %% censored forecast simulation
                     % only relevant if there are other yields
                     if ~isempty(ndxOTHERYIELDS)
@@ -541,7 +557,7 @@ while m < MCMCreps % using while, not for loop to allow going back in MCMC chain
                         % init X0
                         fcstX0              = Xjumpoff;
 
-                        % predictive one-step-ahead moments 
+                        % predictive one-step-ahead moments
                         muX          = fcstA * fcstX0;
                         muY          = muX(ndxfcstY);
                         sqrtOmegaY   = invA_ * diag(fcstSVdraws(:,1,nn));
@@ -657,7 +673,7 @@ if doIRF1
 
     irfdraws                          = fcstYdraws1minus - fcstYdraws;
     irfdraws(IRFcumcode,:,:,:)        = cumsum(irfdraws(IRFcumcode,:,:,:), 2);
-    
+
     IRF1drawsMinus                    = mean(irfdraws, 3);
     IRF1minus                         = mean(IRF1drawsMinus, 4);
     IRF1drawsMinus                    = permute(IRF1drawsMinus, [1 2 4 3]);
@@ -667,20 +683,24 @@ if doIRF1
 
 end
 
-fcstYdraws = reshape(fcstYdraws, N, fcstNhorizons, fcstNdraws);
-% mean forecast is RB except for shadowrates 
-fcstYhat                   = fcstYhatRB; 
+if ~isempty(fcstYdraws)
+    fcstYdraws = reshape(fcstYdraws, N, fcstNhorizons, fcstNdraws);
+
+    fcstYcensorDraws           = reshape(fcstYcensorDraws, N, fcstNhorizons, fcstNdraws);
+    yieldDraws                 = fcstYcensorDraws(ndxSHADOWRATE,:,:); % note: ndxOTHERyields are already censores
+    ndx                        = yieldDraws < ELBbound;
+    yieldDraws(ndx)            = ELBbound;
+    fcstYcensorDraws(ndxSHADOWRATE,:,:)  = yieldDraws;
+
+end
+% mean forecast is RB except for shadowrates
+fcstYhat                   = fcstYhatRB;
 fcstYhat(ndxYIELDS,:)      = mean(fcstYdraws(ndxYIELDS,:,:),3);
-
-
-    
-% collect Ycensor forecasts (that censor otheryields)
-fcstYcensorDraws           = reshape(fcstYcensorDraws, N, fcstNhorizons, fcstNdraws);
-yieldDraws                 = fcstYcensorDraws(ndxSHADOWRATE,:,:); % note: ndxOTHERyields are already censores
-ndx                        = yieldDraws < ELBbound;
-yieldDraws(ndx)            = ELBbound;
-fcstYcensorDraws(ndxSHADOWRATE,:,:)  = yieldDraws;
 fcstYcensorHat             = mean(fcstYcensorDraws,3);
+
+
+
+% collect Ycensor forecasts (that censor otheryields)
 
 if doLogscores
     fcstLogscoreDraws          = reshape(fcstLogscoreDraws, fcstNdraws, 1);
@@ -688,7 +708,11 @@ if doLogscores
     fcstLogscoreIdraws         = reshape(fcstLogscoreIdraws, fcstNdraws, 1);
 end
 
-fprintf('DONE with thisT %d, TID %d (countELBaccept = %d / %d ) \n', thisT, TID, countELBaccept, MCMCdraws)
+if doELBsampling
+    fprintf('DONE with thisT %d, TID %d (countELBaccept = %d / %d, countELBacceptBurnin = %d / %d ) \n', thisT, TID, countELBaccept, MCMCdraws, countELBacceptBurnin, MCMCburnin)
+else
+    fprintf('DONE with thisT %d, TID %d \n', thisT, TID)
+end
 
 return
 
