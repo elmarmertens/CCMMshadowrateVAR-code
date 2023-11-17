@@ -6,7 +6,7 @@ Andrea Carriero (Queen Mary University of London), Todd Clark (Federal Reserve B
 
 The usual disclaimers apply; the views and results conveyed in our research are solely those of the authors and do not necessarily reflect the views of the Federal Reserve Bank of Cleveland, the Federal Reserve System, the Eurosystem, or the Deutsche Bundesbank.
 
-The working paper and supplementary appendices are available here: https://www.elmarmertens.com/research/workingpapers#h.usxxywd346j6
+The working paper and supplementary appendices are available here: https://www.elmarmertens.com/research/workingpapers#h.nqkg0ogemt4s
 
 *WORK IN PROGRESS*
 
@@ -15,7 +15,7 @@ All core scripts are in the main directory. In addition, there are the following
 - `data` for data construction, use `generateFREDdata.m` to produce input files, named `fredMD*.csv`, as needed by the estimation routines described further below
 - `matlabtoolbox` for general utilities (also available at https://github.com/elmarmertens/em-matlabbox)
 
-The default data file is `fredMD20baa-2022-09.csv` (based on the 2022-09 vintage of FRED-MD, available at https://research.stlouisfed.org/econ/mccracken/fred-databases/).
+The default data file is `fredblockMD20-2022-09.csv` (based on the 2022-09 vintage of FRED-MD, available at https://research.stlouisfed.org/econ/mccracken/fred-databases/).
 
 ## General notes
 
