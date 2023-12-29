@@ -385,7 +385,7 @@ ydraws(cumcode, :,:)         = cumsum(ydraws(cumcode,:,:), 2) / np;
 
 end % function simVARshadowrate
 
-%% wrapper function for antithetic sumulation
+%% wrapper function for antithetic simulation
 function yhatdraws = antitheticSim(shock11, zdraws, SVdraws, SV0, N, irfHorizon, irfNdraws, simfun)
 
 ydraws  = NaN(N,irfHorizon,irfNdraws * 4);
