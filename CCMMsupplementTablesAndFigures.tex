@@ -1,0 +1,249 @@
+\documentclass[12pt]{article}   	
+\usepackage{times}
+\usepackage{graphicx}		
+\usepackage{amsmath}
+\usepackage{subcaption}
+\usepackage{amsmath, amsbsy, amsfonts, dcolumn, booktabs} 
+\usepackage{amssymb}
+\usepackage[top=1in,bottom=1in,left=1in,right=1in]{geometry}
+\usepackage{setspace}
+\usepackage{beamerarticle}
+\usepackage{xcolor}
+\usepackage{xspace}
+\usepackage{rotating}
+
+\usepackage{ifthen}
+\usepackage[normalem]{ulem}
+\usepackage[round]{natbib} % \usepackage[round,longnamesfirst]{natbib}
+\usepackage{doi}
+\usepackage{hyperref}
+\usepackage{tocloft}
+\usepackage{thmtools}
+
+\usepackage[labelformat=simple]{subcaption} 
+\renewcommand\thesubfigure{(\alph{subfigure})}
+
+\newcommand*{\tbd}[1][TBD]{{\fbox{\texttt{#1}}}\xspace}
+
+
+\usepackage{authblk}
+\renewcommand\Authsep{ }
+\renewcommand\Authand{ }
+\renewcommand\Authands{ and }
+\renewcommand\Affilfont{\itshape\small}
+\setcounter{Maxaffil}{5}
+\makeatletter
+\renewcommand\AB@affilsep{ \protect\Affilfont} % set to blank here, and add commas manually below so that linebreaks can also be added as needed
+\renewcommand\AB@affilsepx{ \protect\Affilfont}
+\makeatother
+
+\usepackage{xr}
+\makeatletter
+\newcommand*{\addFileDependency}[1]{% argument=file name and extension
+  \typeout{(#1)}
+  \@addtofilelist{#1}
+  \IfFileExists{#1}{}{\typeout{No file #1.}}
+}
+\makeatother
+
+\usepackage{bbold} % used to typeset mathbb{1}
+\newcommand{\Bbbbone}{\ensuremath{\boldsymbol{\mathbb{1}}}}
+\DeclareMathOperator{\indicator}{\Bbbbone}
+
+% -- M A T H
+\DeclareMathAlphabet\mathbfcal{OMS}{cmsy}{b}{n}
+\renewcommand*{\vec}[1]{\ensuremath{\boldsymbol{#1}}}
+\newcommand*{\mat}[1]{\ensuremath{\boldsymbol{#1}}}
+\newcommand*{\partialdiff}[2]{\ensuremath{\frac{\partial #1}{\partial #2}}}
+\newcommand*{\eye}{\ensuremath{\boldsymbol{I}}}
+\DeclareMathOperator{\chol}{chol}
+\DeclareMathOperator{\cov}{Cov}
+\DeclareMathOperator{\var}{Var}
+\DeclareMathOperator{\trace}{tr}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\argmax}{argmax}
+\DeclareMathOperator{\argmin}{argmin}
+\DeclareMathOperator{\vecc}{vec}
+\DeclareMathOperator{\vech}{vech}
+\DeclareMathOperator{\N}{\mathcal{N}}
+\DeclareMathOperator{\TN}{\mathcal{TN}}
+
+
+
+\newcommand*{\legend}{Notes: } % for QE compliant tables
+
+
+\newcommand*{\ccol}[1]{\multicolumn{1}{c}{#1}}
+\newcommand*{\rcol}[1]{\multicolumn{1}{r}{#1}}
+\newcommand*{\lcol}[1]{\multicolumn{1}{l}{#1}}
+\newcolumntype{.}[1]{D{.}{.}{#1}}
+
+\newcommand*{\ZstarText}{$^{\ast\ast\ast}$, $^{\ast\ast}$ and $^{\ast}$ denote significance at the 1\%, 5\% respectively 10\% level.\xspace}
+
+\newcommand{\onlineresults}{supplementary online appendix\xspace}
+\newcommand*{\datavintage}{September 2022\xspace}
+\newcommand*{\sampleStop}{August 2022\xspace}
+\newcommand*{\sampleStopalt}{2022:08\xspace}
+\newcommand*{\fcsampleStop}{December 2017\xspace}
+\newcommand*{\evalstartyear}{2009\xspace}
+\newcommand*{\evalstartyearmonth}{2009:01\xspace}
+
+% ------------------------------------------------------
+% MACROS FOR TABLES AND FIGURES
+% ------------------------------------------------------
+
+\newcommand{\imagesandtables}{foo}
+\graphicspath{{./\imagesandtables/}}
+
+
+\newcommand{\githubrepo}{\url{https://github.com/elmarmertens/CCMMshadowrateVAR-code}}
+
+\newcommand*{\evalend}{201712}
+
+\newcommand*{\citekrippner}{\cite{krippner2013el,Krippner2015book}\xspace}
+
+\newlength{\picwid}
+\setlength{\picwid}{.3\textwidth}
+
+\cftsetindents{section}{0em}{2.75em}
+\cftsetindents{figure}{0em}{2em}
+\cftsetindents{table}{0em}{2em}
+
+\setlength{\cftsubsecnumwidth}{\cftsecnumwidth}
+\setlength{\cftsubsubsecnumwidth}{\cftsecnumwidth}
+\setlength{\cftsubsecindent}{\cftsecindent}
+\setlength{\cftsubsubsecindent}{\cftsecindent}
+\setcounter{tocdepth}{1}
+
+
+\begin{document}
+
+\listoftables
+\listoffigures
+
+
+
+\clearpage
+\begin{table}
+	\caption{Forecast performance of shadow-rate VARs with single interest rate (incl. COVID-19)}
+	\label{tab:oos:ExYields:2022-08}
+	\begin{small}
+		\input{\imagesandtables/tripleComparisonQE-fredsxMD20exYield-2022-09-Standard-p12-vs-shadowrateGeneralVAR-p12-vs-nonstructuralVAR-p12-evalStart201001evalEnd202208.tex}
+	\end{small}
+\end{table}
+
+\clearpage
+\begin{table}
+	\caption{Forecast performance of shadow-rate VARs w/multiple interest rates (incl. COVID-19)}
+	\label{tab:oos:WithYields:2022-08}
+	\begin{small}
+	\input{\imagesandtables/tripleComparisonQE-fredsxMD20-2022-09-Standard-p12-vs-nonstructuralVAR-p12-vs-blocknonstructuralVAR-p12-evalStart201001evalEnd202208.tex}
+	\end{small}
+\end{table}
+
+\clearpage
+\begin{table}
+	\caption{Shadow-rate VARs compared against a linear VAR w/o short-term interest rates (incl. COVID-19)}
+	\label{tab:oos:OnlyLongYields:2022-08}
+	\begin{small}
+	\input{\imagesandtables/tripleComparisonQE-fredsxMD14longyields-2022-09-standardVAR-p12-vs-nonstructuralVAR-p12-vs-BlocknonstructuralVAR-p12-evalStart201001evalEnd202208.tex}
+	\end{small}
+\end{table}
+
+\clearpage
+\begin{figure}
+\setlength{\picwid}{.4\textwidth}
+\caption{Parameter changes over time}
+\label{fig:PAIsinceGFC0}
+\begin{center}
+\begin{subfigure}[b]{\picwid}
+\centering\textbf{Standard VAR}\vspace{0.5\baselineskip}
+\caption{intercepts}
+\label{subfig:pai:standard:intercepts}
+\includegraphics[width=\textwidth]{PAI-intercept-standardVARAR1SV-fredsxMD20-2022-09}
+\end{subfigure}
+\quad
+\begin{subfigure}[b]{\picwid}
+\centering\textbf{Shadow-rate VAR}\vspace{0.5\baselineskip}
+\caption{intercepts}
+\label{subfig:pai:nonstructural:intercepts}
+\includegraphics[width=\textwidth]{PAI-intercept-ELBblocknonstructuralAR1SV-fredsxMD20-2022-09}
+\end{subfigure}
+\\
+\begin{subfigure}[b]{\picwid}
+\caption{first lag}
+\label{subfig:pai:standard:lag1}
+\includegraphics[width=\textwidth]{PAI-lag1-standardVARAR1SV-fredsxMD20-2022-09}
+\end{subfigure}
+\quad
+\begin{subfigure}[b]{\picwid}
+\caption{first lag}
+\label{subfig:pai:nonstructural:lag1}
+\includegraphics[width=\textwidth]{PAI-lag1-ELBblocknonstructuralAR1SV-fredsxMD20-2022-09}
+\end{subfigure}
+\\
+\begin{subfigure}[b]{\picwid}
+\caption{other lags}
+\label{subfig:pai:standard:lagother}
+\includegraphics[width=\textwidth]{PAI-lagOTHER-standardVARAR1SV-fredsxMD20-2022-09}
+\end{subfigure}
+\quad
+\begin{subfigure}[b]{\picwid}
+\caption{other lags}
+\label{subfig:pai:nonstructural:lagother}
+\includegraphics[width=\textwidth]{PAI-lagOTHER-ELBblocknonstructuralAR1SV-fredsxMD20-2022-09}
+\end{subfigure}
+\end{center}
+Note: Absolute values of standardized differences in mean estimates of VAR coefficients; the estimates are standardized based on the posterior standard deviation of each coefficient generated by the linear VAR using data through 2008:11 (last month prior to first time at ELB). Shadow-rate VAR estimates are obtained from the restricted non-structural shadow-rate VAR. All estimation windows use available data since 1959:03.
+\end{figure}
+
+\begin{figure}
+\setlength{\picwid}{.4\textwidth}
+\caption{Parameter changes over time (ex yields)}
+\label{fig:PAIsinceGFC0:exyield}
+\begin{center}
+\begin{subfigure}[b]{\picwid}
+\centering\textbf{Standard VAR}\vspace{0.5\baselineskip}
+\caption{intercepts}
+\label{subfig:exyield:pai:standard:intercepts}
+\includegraphics[width=\textwidth]{PAI-intercept-standardVARAR1SV-fredsxMD20exYield-2022-09}
+\end{subfigure}
+\quad
+\begin{subfigure}[b]{\picwid}
+\centering\textbf{Shadow-rate VAR}\vspace{0.5\baselineskip}
+\caption{intercepts}
+\label{subfig:exyield:pai:nonstructural:intercepts}
+\includegraphics[width=\textwidth]{PAI-intercept-ELBblocknonstructuralAR1SV-fredsxMD20exYield-2022-09}
+\end{subfigure}
+\\
+\begin{subfigure}[b]{\picwid}
+\caption{first lag}
+\label{subfig:exyield:pai:standard:lag1}
+\includegraphics[width=\textwidth]{PAI-lag1-standardVARAR1SV-fredsxMD20exYield-2022-09}
+\end{subfigure}
+\quad
+\begin{subfigure}[b]{\picwid}
+\caption{first lag}
+\label{subfig:exyield:pai:nonstructural:lag1}
+\includegraphics[width=\textwidth]{PAI-lag1-ELBblocknonstructuralAR1SV-fredsxMD20exYield-2022-09}
+\end{subfigure}
+\\
+\begin{subfigure}[b]{\picwid}
+\caption{other lags}
+\label{subfig:exyield:pai:standard:lagother}
+\includegraphics[width=\textwidth]{PAI-lagOTHER-standardVARAR1SV-fredsxMD20exYield-2022-09}
+\end{subfigure}
+\quad
+\begin{subfigure}[b]{\picwid}
+\caption{other lags}
+\label{subfig:exyield:pai:nonstructural:lagother}
+\includegraphics[width=\textwidth]{PAI-lagOTHER-ELBblocknonstructuralAR1SV-fredsxMD20exYield-2022-09}
+\end{subfigure}
+\end{center}
+Note: Absolute values of standardized differences in mean estimates of VAR coefficients; the estimates are standardized based on the posterior standard deviation of each coefficient generated by the linear VAR using data through 2008:11 (last month prior to first time at ELB). Shadow-rate VAR estimates are obtained from the restricted non-structural shadow-rate VAR. All estimation windows use available data since 1959:03.
+\end{figure}
+
+\end{document}
+
+

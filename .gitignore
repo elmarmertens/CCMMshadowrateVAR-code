@@ -8,6 +8,9 @@
 !*.xls
 !*.xlsx
 !*.sh
+!*.tex
+!makefile
+*__genmod*
 !/data
 !/data/*.xls
 !/data/*.xlsx
@@ -17,3 +20,9 @@
 .*
 !.gitignore
 !*makefile
+/localtemp.m
+foo*.m
+foo*.tex
+*-template*.*
+/data/WUXIASHADOWRATE.csv
+/data/KRIPPNERSHADOWRATE.csv

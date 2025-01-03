@@ -1,0 +1,256 @@
+\documentclass[12pt]{article}   	
+\usepackage{times}
+\usepackage{graphicx}		
+\usepackage{amsmath}
+\usepackage{subcaption}
+\usepackage{amsmath, amsbsy, amsfonts, dcolumn, booktabs} 
+\usepackage{amssymb}
+\usepackage[top=1in,bottom=1in,left=1in,right=1in]{geometry}
+\usepackage{setspace}
+\usepackage{beamerarticle}
+\usepackage{xcolor}
+\usepackage{xspace}
+\usepackage{rotating}
+
+\usepackage{ifthen}
+\usepackage[normalem]{ulem}
+\usepackage[round]{natbib} % \usepackage[round,longnamesfirst]{natbib}
+\usepackage{doi}
+\usepackage{hyperref}
+\usepackage{tocloft}
+\usepackage{thmtools}
+
+\usepackage[labelformat=simple]{subcaption} 
+\renewcommand\thesubfigure{(\alph{subfigure})}
+
+
+
+\usepackage{authblk}
+\renewcommand\Authsep{ }
+\renewcommand\Authand{ }
+\renewcommand\Authands{ and }
+\renewcommand\Affilfont{\itshape\small}
+\setcounter{Maxaffil}{5}
+\makeatletter
+\renewcommand\AB@affilsep{ \protect\Affilfont} % set to blank here, and add commas manually below so that linebreaks can also be added as needed
+\renewcommand\AB@affilsepx{ \protect\Affilfont}
+\makeatother
+
+\usepackage{xr}
+\makeatletter
+\newcommand*{\addFileDependency}[1]{% argument=file name and extension
+  \typeout{(#1)}
+  \@addtofilelist{#1}
+  \IfFileExists{#1}{}{\typeout{No file #1.}}
+}
+\makeatother
+
+\usepackage{bbold} % used to typeset mathbb{1}
+\newcommand{\Bbbbone}{\ensuremath{\boldsymbol{\mathbb{1}}}}
+\DeclareMathOperator{\indicator}{\Bbbbone}
+
+% -- M A T H
+\DeclareMathAlphabet\mathbfcal{OMS}{cmsy}{b}{n}
+\renewcommand*{\vec}[1]{\ensuremath{\boldsymbol{#1}}}
+\newcommand*{\mat}[1]{\ensuremath{\boldsymbol{#1}}}
+\newcommand*{\partialdiff}[2]{\ensuremath{\frac{\partial #1}{\partial #2}}}
+\newcommand*{\eye}{\ensuremath{\boldsymbol{I}}}
+\DeclareMathOperator{\chol}{chol}
+\DeclareMathOperator{\cov}{Cov}
+\DeclareMathOperator{\var}{Var}
+\DeclareMathOperator{\trace}{tr}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\argmax}{argmax}
+\DeclareMathOperator{\argmin}{argmin}
+\DeclareMathOperator{\vecc}{vec}
+\DeclareMathOperator{\vech}{vech}
+\DeclareMathOperator{\N}{\mathcal{N}}
+\DeclareMathOperator{\TN}{\mathcal{TN}}
+
+
+\newcommand*{\legend}{Notes: } % for QE compliant tables
+
+
+
+\newcommand*{\ccol}[1]{\multicolumn{1}{c}{#1}}
+\newcommand*{\rcol}[1]{\multicolumn{1}{r}{#1}}
+\newcommand*{\lcol}[1]{\multicolumn{1}{l}{#1}}
+\newcolumntype{.}[1]{D{.}{.}{#1}}
+
+\newcommand*{\ZstarText}{$^{\ast\ast\ast}$, $^{\ast\ast}$ and $^{\ast}$ denote significance at the 1\%, 5\% respectively 10\% level.\xspace}
+
+\newcommand{\onlineresults}{supplementary online appendix\xspace}
+\newcommand*{\datavintage}{September 2022\xspace}
+\newcommand*{\sampleStop}{August 2022\xspace}
+\newcommand*{\sampleStopalt}{2022:08\xspace}
+\newcommand*{\fcsampleStop}{December 2017\xspace}
+\newcommand*{\evalstartyear}{2009\xspace}
+\newcommand*{\evalstartyearmonth}{2009:01\xspace}
+
+% ------------------------------------------------------
+% MACROS FOR TABLES AND FIGURES
+% ------------------------------------------------------
+
+\newcommand{\imagesandtables}{foo}
+\graphicspath{{./\imagesandtables/}}
+
+\newcommand{\githubrepo}{\url{https://github.com/elmarmertens/CCMMshadowrateVAR-code}}
+
+\newcommand*{\thislabel}{}
+
+\newcommand*{\evalend}{201712}
+
+\newcommand*{\citekrippner}{\cite{krippner2013el,Krippner2015book}\xspace}
+
+\newlength{\picwid}
+\setlength{\picwid}{.3\textwidth}
+
+
+\begin{document}
+
+\clearpage
+\listoftables
+% \clearpage
+\listoffigures
+
+\clearpage
+\begin{table}[t]
+    \caption{List of variables}
+    \label{tab:datalist}
+\begin{center}
+\begin{tabular}{lllc}
+\toprule
+Variable & FRED-MD code & transformation & Minnesota prior\\
+\midrule
+\multicolumn{4}{c}{PANEL A: Non-interest-rate variables ($x_t$)}\\
+\midrule
+USD / GBP FX Rate & EXUSUKx & \ensuremath{\Delta\log(x_t) \cdot 1200}
+ & 0 \\
+S\&P 500 & SP500 & \ensuremath{\Delta\log(x_t) \cdot 1200}
+ & 0 \\
+Housing Starts & HOUST  & \ensuremath{\log(x_t)} & 1 \\
+PCE Prices & PCEPI & \ensuremath{\Delta\log(x_t) \cdot 1200}
+ & 1 \\
+PPI (Metals) & PPICMM & \ensuremath{\Delta\log(x_t) \cdot 1200}
+ & 1 \\
+PPI (Fin. Goods) & WPSFD49207 & \ensuremath{\Delta\log(x_t) \cdot 1200}
+ & 1 \\
+Hourly Earnings & CES0600000008 & \ensuremath{\Delta\log(x_t) \cdot 1200}
+ & 0 \\
+Hours & CES0600000007  &  & 0 \\
+Nonfarm Payrolls & PAYEMS & \ensuremath{\Delta\log(x_t) \cdot 1200}
+ & 0 \\
+Unemployment & UNRATE  &  & 1 \\
+Capacity Utilization & CUMFNS  &  & 1 \\
+IP & INDPRO & \ensuremath{\Delta\log(x_t) \cdot 1200}
+ & 0 \\
+Real Consumption & DPCERA3M086SBEA & \ensuremath{\Delta\log(x_t) \cdot 1200}
+ & 0 \\
+Real Income & RPI & \ensuremath{\Delta\log(x_t) \cdot 1200}
+ & 0 \\
+\midrule
+\multicolumn{4}{c}{PANEL B: Nominal interest rates ($i_t$)}\\
+\midrule
+BAA Yield & BAA  &  & 1 \\
+10-Year Yield & GS10  &  & 1 \\
+5-Year Yield & GS5  &  & 1 \\
+1-Year Yield & GS1  &  & 1 \\
+6-Month Tbill & TB6MS  &  & 1 \\
+Federal Funds Rate & FEDFUNDS  &  & 1 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\legend{Data obtained from the 2022-09 vintage of FRED-MD. Monthly observations from 1959:03 to 2022:08.
+Entries in the column ``Minnesota prior'' report the prior mean on the first own-lag coefficient used in our BVARs (with prior means on all other VAR coefficients set to zero).}
+\end{table}
+
+\begin{table}
+\caption{Forecast performance of shadow-rate VARs with single interest rate}
+\label{tab:oos:ExYields}
+\input{\imagesandtables/tripleComparisonQE-fredsxMD20exYield-2022-09-Standard-p12-vs-shadowrateGeneralVAR-p12-vs-nonstructuralVAR-p12-evalStart201001evalEnd201712.tex}
+\end{table}
+
+\clearpage
+\begin{figure}[t]
+	\caption{Estimates of ELB-specific coefficient vector $b_{xs}$.} 
+	\setlength{\picwid}{\textwidth}
+	\begin{center}
+			\includegraphics[width=.75\textwidth]{BETA-ELBshadowrateGeneralAR1SV-RATSbvarshrinkage-p12-202208}
+	\end{center}
+	\legend{Posterior medians and posterior 90\% uncertainty of estimates obtained using the full data sample through 2022:08.}\label{fig:BETA:exYields}
+\end{figure}
+
+\clearpage
+\begin{table}
+\caption{Forecast performance of shadow-rate VARs with multiple interest rates}
+\label{tab:oos:WithYields}
+\input{\imagesandtables/tripleComparisonQE-fredsxMD20-2022-09-Standard-p12-vs-nonstructuralVAR-p12-vs-blocknonstructuralVAR-p12-evalStart201001evalEnd201712.tex}
+\end{table}
+
+\clearpage
+\begin{table}
+\caption{Shadow-rate VARs compared against a linear VAR w/o short-term interest rates}
+\label{tab:oos:OnlyLongYields}
+\input{\imagesandtables/tripleComparisonQE-fredsxMD14longyields-2022-09-standardVAR-p12-vs-nonstructuralVAR-p12-vs-BlocknonstructuralVAR-p12-evalStart201001evalEnd201712.tex}
+\end{table}
+
+\clearpage
+\begin{figure}[t]
+	\caption{Shadow-rate estimates (posterior medians and 90\% bands).} 
+	\setlength{\picwid}{.48\textwidth}
+	\begin{center}
+		\begin{subfigure}[b]{\picwid}
+			\centering
+			\includegraphics[width=\textwidth]{shadowrate1-p12-fredsxMD20exYield-2022-09-ELBnonstructuralAR1SV-vs-ELBshadowrateGeneralAR1SV-LSAP}
+			\caption{Without yields}\label{subfig:shadowrate:withoutyields}
+		\end{subfigure}
+		\begin{subfigure}[b]{\picwid}
+			\centering
+			\includegraphics[width=\textwidth]{shadowrate1-p12-fredsxMD20-2022-09-ELBblocknonstructuralAR1SV-wuxiakrippner-LSAP}
+			\caption{With yields}\label{subfig:shadowrate:withyields:wuxia}
+		\end{subfigure}
+
+	\end{center}
+
+	\legend{Panel~(\subref{subfig:shadowrate:withoutyields}) reports estimates generated with models including the federal funds rate as the only interest rate: (1) the general shadow-rate VAR and (2) the non-structural shadow-rate VAR.  Panel~(\subref{subfig:shadowrate:withyields:wuxia}) reports corresponding estimates from the restricted version of the non-structural shadow-rate VAR estimated using all variables, including longer-term yields. Panel~(\subref{subfig:shadowrate:withyields:wuxia}) also includes current estimates of the shadow rates of Krippner (2015) and Wu and Xia (2016).} \label{fig:shadowrates}
+\end{figure}
+
+
+\clearpage
+\begin{figure}[!t]
+\caption{Predictive densities for actual and shadow values of the federal funds rate.}  
+
+\newcommand{\thisYear}{}
+\newcommand{\thisMonth}{}
+\renewcommand{\thisMonth}{12}
+
+\setlength{\picwid}{.48\textwidth}
+\renewcommand{\thislabel}{fredsxMD20-2022-09}
+\begin{center}
+\begin{subfigure}[b]{\picwid}
+\renewcommand{\thisYear}{2020}
+\renewcommand{\thisMonth}{03}
+\centering
+\includegraphics[width=\textwidth]{FEDFUNDS-\thislabel-blocknonstructuralshadowrateAR1SV-predictivedensity1-\thisYear-\thisMonth-WITHLEGEND}
+\caption{\thisYear:\thisMonth}
+\label{subfig:ffr:COVID:\thisYear:\thisMonth}
+\end{subfigure}
+\quad
+\begin{subfigure}[b]{\picwid}
+\renewcommand{\thisYear}{2020}
+\renewcommand{\thisMonth}{09}
+\centering
+\includegraphics[width=\textwidth]{FEDFUNDS-\thislabel-blocknonstructuralshadowrateAR1SV-predictivedensity1-\thisYear-\thisMonth}
+\caption{\thisYear:\thisMonth}
+\label{subfig:ffr:COVID:\thisYear:\thisMonth}
+\end{subfigure}
+\end{center}
+\legend{Predictive density for the actual and shadow values of the federal funds rate, simulated out of sample at different jump-off dates.  Dashed-dotted (black) lines depict the predictive density for the actual rate as generated from the standard VAR. The shaded (light blue) area with dashed (white) lines represent the restricted version of the non-structural shadow-rate VAR's predictive density of the shadow rate, while solid lines (dark blue) reflect the corresponding censored density for the actual interest rate. Posterior medians and 68 percent bands.}
+\label{fig:predictivedensities:ffr:COVID} 
+\end{figure}
+
+
+\end{document}
+
