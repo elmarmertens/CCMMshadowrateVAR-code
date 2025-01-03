@@ -53,7 +53,12 @@ else
 end
 
 % SED-PARAMETERS-HERE
-
+        datalabel='fredsxMD20-2022-09'; 
+        p=12; 
+        ELBbound=0.25; 
+		MCMCdraws=1e3; 
+		fcstNdraws= 10 * MCMCdraws; 
+        
 
 doStoreXL           = false; %#ok<*NASGU>
 check_stationarity  = 0;                  % Truncate nonstationary draws? (1=yes)

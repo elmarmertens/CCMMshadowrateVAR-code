@@ -1,4 +1,4 @@
-function shadowrateDraws = gibbsdrawShadowrates(Y, STATE0, YHAT0, ndxS, sNaN, p, C, Psi, SVol, elbBound, Ndraws, burnin, rndStream, showProgress)
+function shadowrateDraws = gibbsdrawShadowratesTVP(Y, STATE0, YHAT0, ndxS, sNaN, p, C, Psi, SVol, elbBound, Ndraws, burnin, rndStream, showProgress)
 % GIBBSDRAWSHADOWRATES ...
 %
 %   ...
@@ -51,53 +51,50 @@ if Nw ~= Ny
     error('dimension mismatch');
 end
 
-PSIt = zeros(Ny, Nw, T);
-psi  = Psi(1+(1:Ny),:); % w/o constant
+psi  = Psi(1+(1:Ny),:,:); % w/o constant
+PSI  = zeros(Ny, Nw, T);
 for t = 1 : T
-    PSIt(:,:,t) = psi * diag(SVol(:,t));
+    PSI(:,:,t) = psi(:,:,t) * diag(SVol(:,t));
 end
 
 %% prepare smoothing weights
 J                  = NaN(Ns, Nstate + Nx, T);
 sqrtOmegaPosterior = NaN(Ns,Ns,T);
 
-cc             = C(2:end,2:end); % drop constant
-Cpowerp        = NaN(Nstate, Nstate, p+1);
-Cpowerp(:,:,1) = eye(Nstate);
-for k = 1 : p
-    Cpowerp(:,:,k+1) = cc * Cpowerp(:,:,k);
-end
-Cpowerp = Cpowerp(:,1:Ny,:);
+cc             = C(2:end,2:end,:); % drop constant
 
 
 % smoothing weights
 for t = 1 : T-p
-    
+
     if any(sNaN(:,t))
+
+        Cpowerp        = NaN(Nstate, Nstate, p+1);
+        Cpowerp(:,:,1) = eye(Nstate);
+        for k = 1 : p
+            Cpowerp(:,:,k+1) = cc(:,:,t) * Cpowerp(:,:,k);
+        end
+        Cpowerp = Cpowerp(:,1:Ny,:);
+
+
         % prepare M
         M                                    = zeros(Nstate + Nw, Nw * (p + 1));
         for j = 0 : p
-            M(1 : Nstate, Nw * j + (1 : Nw)) = Cpowerp(:,:,p+1-j) * PSIt(:,:,t+j);
+            M(1 : Nstate, Nw * j + (1 : Nw)) = Cpowerp(:,:,p+1-j) * PSI(:,:,t+j);
         end
-        M(Nstate + (1 : Nx), 1 : Nw)         = PSIt(ndxX,:,t);
-        M(Nstate + Nx + 1 : end, 1 : Nw)     = PSIt(ndxS,:,t);
-        
-        
+        M(Nstate + (1 : Nx), 1 : Nw)         = PSI(ndxX,:,t);
+        M(Nstate + Nx + 1 : end, 1 : Nw)     = PSI(ndxS,:,t);
+
+
         % perform qr
         [~,R] = qr(M');
         R     = R';
-        
-        % catch warning is sqrtSigma is ill conditioned
-        lastwarn('', '');
+
         sqrtSigma                  = R(1:Nstate+Nx,1:Nstate+Nx);
         J(:,:,t)                   = R(Nstate+Nx+(1:Ns),1:Nstate+Nx) / sqrtSigma;
-        [~, warnID] = lastwarn();
-        if ~isempty(warnID)
-            error('ill-conditioned sqrtSigma at t=%d, min(abs(diag(sqrtSigma)))=%f', t, min(abs(diag(sqrtSigma))))
-        end
         sqrtOmegaPosterior(:,:,t)  = R(Nstate+Nx+(1:Ns), Nstate+Nx+(1:Ns));
     end
-    
+
 end
 
 if isempty(t) % if T-p<1
@@ -105,36 +102,37 @@ if isempty(t) % if T-p<1
 end
 
 while t < T
-    
+
     t = t + 1;
-    
+
     if any(sNaN(:,t))
-        
+
+        Cpowerp        = NaN(Nstate, Nstate, p+1);
+        Cpowerp(:,:,1) = eye(Nstate);
+        for k = 1 : p
+            Cpowerp(:,:,k+1) = cc(:,:,t) * Cpowerp(:,:,k);
+        end
+        Cpowerp = Cpowerp(:,1:Ny,:);
+
         k = T - t;
         Nsignal = Ny * k + Nx;
-        
+
         thisM                               = zeros(Nsignal + Ns, Nsignal + Ns);
         for j = 0 : k
-            thisM(1 : Nsignal, Nw * j + (1 : Nw)) = Cpowerp(1:Nsignal,:,k+1-j) * PSIt(:,:,t+j);
+            thisM(1 : Nsignal, Nw * j + (1 : Nw)) = Cpowerp(1:Nsignal,:,k+1-j) * PSI(:,:,t+j);
         end
-        thisM(k * Ny + (1 : Nx), 1 : Nw)    = PSIt(ndxX,:,t);
-        thisM(Nsignal + 1 : end, 1 : Nw)    = PSIt(ndxS,:,t);
-        
+        thisM(k * Ny + (1 : Nx), 1 : Nw)    = PSI(ndxX,:,t);
+        thisM(Nsignal + 1 : end, 1 : Nw)    = PSI(ndxS,:,t);
+
         [~,R] = qr(thisM');
         R     = R';
-                
-        % catch warning is sqrtSigma is ill conditioned
-        lastwarn('', '');
+
         sqrtSigma                      = R(1 : Nsignal, 1 : Nsignal);
         J(:,:,t)                       = 0; % whacks out dummy values for future states used below
         J(:, Ny * (p - k) + 1 : end,t) = R(Nsignal + (1:Ns), 1 : Ny * k + Nx) / sqrtSigma; % "live values" at bottom of state vector
-        [~, warnID] = lastwarn();
-        if ~isempty(warnID)
-            error('ill-conditioned sqrtSigma at t=%d, min(abs(diag(sqrtSigma)))=%f', t, min(abs(diag(sqrtSigma))))
-        end
         sqrtOmegaPosterior(:,:,t)      = R(Nsignal + (1:Ns), Nsignal + (1:Ns));
-        
-        
+
+
     end
 end
 
@@ -152,18 +150,10 @@ if Ns > 1
             end
         end
     end
-    
+
     % checkdiff(sqrtOmega1(end,:), abs(sqrtOmegaPosterior(end,end,:)));
 end
 
-%% prepare further state-space objects
-
-Cex1 = C(2:end,2:end);
-Hex1 = eye(Ny,Nstate);
-
-
-HC    = Hex1 * Cex1;
-CCpp1 = Cex1^(p+1); 
 
 %% compute deterministic state
 Y0 = zeros(Ny,T);
@@ -172,7 +162,7 @@ for t = 1 : T
     if ~isempty(YHAT0)
         Y0(:,t) = Y0(:,t) + YHAT0(:,t);
     end
-    STATE0  = C * STATE0;
+    STATE0  = C(:,:,t) * STATE0;
 end
 Ytilde = Y - Y0;
 
@@ -186,27 +176,42 @@ else
 end
 
 
+% prepare state space objects
+Hex1  = eye(Ny,Nstate);
+CCpp1 = NaN(Nstate,Nstate,T);
+HC    = NaN(Ny,Nstate,T);
+for t = 1 : T
 
+    if any(sNaN(:,t))
+        Cex1         = C(2:end,2:end,t);          
+        CCpp1(:,:,t) = Cex1^(p+1);
+
+        HC(:,:,t)    = Hex1 * Cex1;
+    end
+end
+
+% start loop
 if showProgress
     progressbar(0)
 end
 for n = 1 : totalNdraws
-    
+
     % init t = 1
-    STATElag        = zeros(Nstate,1); 
+    STATElag        = zeros(Nstate,1);
 
     % prepare construction of STATE vector
     YY      = cat(2, Ytilde, zeros(Ny, p)); % padded (dummy) values to compute STATEfuture below
-    
+
     for t = 1 : T
-        
+
         if any(sNaN(:,t))
-            
-            Yhat            = HC * STATElag;
+
+            Yhat            = HC(:,:,t) * STATElag;
             Xresid          = Ytilde(ndxX,t) - Yhat(ndxX);
-            
+
             STATEfuture     = YY(:,t+p:-1:t+1); % using zeros as dummy values for t + k > T, whacked out by J=0
-            STATEfuturehat  = CCpp1 * STATElag;
+            STATEfuturehat  = CCpp1(:,:,t) * STATElag;
+            
             STATEtilde      = STATEfuture(:) - STATEfuturehat;
 
             Shat            = Yhat(ndxS) + Y0(ndxS,t);
@@ -216,27 +221,27 @@ for n = 1 : totalNdraws
                 S(:,t) = Sposterior + sqrtOmegaPosterior(:,:,t) * zdraws(:,t,n);
             else
                 if Ns == 1
-                    
+
                     S(:,t) = drawTruncNormal(Sposterior, sqrtOmegaPosterior(:,:,t), elbBound, udraws(:,t,n));
-                    
+
                 else
-                    
+
                     for s = find(sNaN(:,t)')
                         ndxOther = 1 : Ns ~= s;
                         thisMu  = Sposterior(s) + beta1(s,:,t) * (S(ndxOther,t) - Sposterior(ndxOther));
                         thisSig = sqrtOmega1(s,t);
                         S(s,t)  = drawTruncNormal(thisMu, thisSig, elbBound, udraws(s,t,n));
                     end
-                    
+
                 end
             end
-            
-            
+
+
             Y(ndxS,t)   = S(:,t); % note: future values in YY need not be updated here, since we are looping forward
             Ytilde(:,t) = Y(:,t) - Y0(:,t);
-            
+
         end % any(sNaN(:,t))
-        
+
         % update (even if not(sNaN))
         if t >= p
             this            = Ytilde(:,t:-1:t-p+1);
@@ -246,11 +251,11 @@ for n = 1 : totalNdraws
             STATElag = cat(1, Ytilde(:,t), this);
         end
     end % for t
-    
+
     if n > burnin
         shadowrateDraws(:,:,n-burnin) = S;
     end
-    
+
     if showProgress
         progressbar(n / (totalNdraws))
     end

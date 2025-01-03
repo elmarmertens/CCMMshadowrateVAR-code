@@ -46,7 +46,6 @@ if sqrtVCV > tol
         zdraw = -sqrt(2) * erfcinv(2 * udraw * PHIbar);
     else
         zdraw = ub;
-        %     jack  = trandn(-Inf, ub);
     end
 
     ydraw  = thismu + sqrtVCV * zdraw;

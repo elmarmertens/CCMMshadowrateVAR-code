@@ -6,7 +6,7 @@ function PAI=CTA(Y,X,N,K,~,A_,sqrtht,iV,iVb_prior,PAI,rndStream)
 % triangularization achieves computation gains of order N^2 where N is the
 % number of variables in the VAR. Carriero, Clark and Marcellino (2015),
 % Large Vector Autoregressions with stochastic volatility and flexible
-% priors. 
+% priors.
 %
 % The model is:
 %
@@ -25,29 +25,29 @@ function PAI=CTA(Y,X,N,K,~,A_,sqrtht,iV,iVb_prior,PAI,rndStream)
 % Data and pointers:
 % Y     = (TxN) matrix of data appearing on the LHS of the VAR
 % X     = (TxK) matrix of data appearing on the RHS of the VAR
-% N     = scalar, #of variables in VAR 
-% K     = scalar, #of regressors (=N*p+1)  
+% N     = scalar, #of variables in VAR
+% K     = scalar, #of regressors (=N*p+1)
 % T     = scalar, #of observations
 % The matrix X needs to be ordered as: [1, y(t-1), y(t-2),..., y(t-p)]
-% 
+%
 % Error variance stuff:
 % invA_   = (NxN) inverse of lower triangular covariance matrix A
-% sqrtht = (TxN) time series of diagonal elements of volatility matrix 
+% sqrtht = (TxN) time series of diagonal elements of volatility matrix
 % For a homosckedastic system, with Sigma the error variance, one can
 % perform the LDL decomposition (command [L,D]=LDL(Sigma)) and set inv_A=L
-% and sqrtht=repmat(sqrt(diag(D)'),T,1). 
+% and sqrtht=repmat(sqrt(diag(D)'),T,1).
 %
 % Priors:
-% iV          = (NKxNK) precision matrix for VAR coefficients 
+% iV          = (NKxNK) precision matrix for VAR coefficients
 % iVB_prior   = (NKx1) (prior precision)*(prior mean)
 % Note 1:iV is the inverse of the prior matrix and iVB_prior is the product
 % of iV and the prior mean vector, which both need to be computed only once,
 % before the start of the main MCMC loop.
 % Note 2:in this code, iV is assumed block-diagonal. This implies that the
-% prior is independent across equations. This includes most of the priors 
+% prior is independent across equations. This includes most of the priors
 % usually considered, including the Minnesota one.  To use a non-block
-% diagonal iV one needs to modify the code using the recursions illustrated 
-% in equations (37) and (38).  
+% diagonal iV one needs to modify the code using the recursions illustrated
+% in equations (37) and (38).
 %
 % OUTPUT
 % One draw from (PAI|A,Lambda,data)
@@ -58,16 +58,16 @@ function PAI=CTA(Y,X,N,K,~,A_,sqrtht,iV,iVb_prior,PAI,rndStream)
 zdraws = randn(rndStream,K,N);
 Ik       = eye(K);
 for j=1:N
-    
+
     % select coefficients of equation j to remove from the LHS
-    PAI(:,j)=zeros(K,1); 
-    
+    PAI(:,j)=zeros(K,1);
+
     % build model
     lambda=vec(sqrtht(:,j:N));
-    Y_j=vec((Y - X *PAI) * A_(j:N,:)')./lambda; 
-    
+    Y_j=vec((Y - X *PAI) * A_(j:N,:)')./lambda;
+
     X_j=kron(A_(j:N,j),X)./lambda;
-    
+
     % posterior moments
     index=K*(j-1)+1:(K*(j-1)+K);
     iV_post = iV(index,index)  + X_j'*X_j;
@@ -75,26 +75,28 @@ for j=1:N
     if ispd == 0
 
         Vchol_post      = (iVchol_post \ Ik)';  % note: Vchol_post used below for constructing draws; hence the transpose
-        V_post          = Vchol_post * Vchol_post'; 
-    
+        V_post          = Vchol_post * Vchol_post';
+
     else % proceed via QR
-        
+
+        % error('CTA: ill-conditioned VCV matrix')
+
         warning('switching to QR routine')
-        
+
         iVchol = chol(iV(index,index))'; % could do this once and for all, not for every call of triang
         % set up Kailath's fast array matrix
         qrM = [iVchol, X_j'];
         R = triu(qr(qrM',0))';
-    
+
         iVchol_post = R(1:K,1:K);
         Vchol_post  = (iVchol_post \ Ik)'; % upper triangular but OK
         V_post      = Vchol_post * Vchol_post';
     end
-    
+
     % posterior draw
     b_post   = V_post*(iVb_prior(index) + X_j'*Y_j);
     PAI(:,j) = b_post + Vchol_post * zdraws(:,j);
-    
+
 end
-                    
-  
+
+
