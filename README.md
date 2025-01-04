@@ -55,7 +55,7 @@ The code in this replication package estimates all models discussed in the paper
 FRED-MD data were downloaded from the [Federal Reserve Bank of St. Louis](https://www.stlouisfed.org/research/economists/mccracken/fred-databases). We use the 2022 September vintage. A copy of the data is provided as part of this archive. The data are in the public domain.
 - Datafile: [2022-09.csv](data/2022-09.csv)
 
-Updated shadow rate estimates from Krippner (2015) and Wu and Xia (2016) were downloaded from the authors websites, but are only used for comparison plots; these data series are not used in our estimation.The data are publicly available, and copies are provided with this replication package: Estimates from Krippner can be downloaded from https://www.ljkmfa.com/visitors/ and are subject to his disclaimer and copyright statements (https://www.ljkmfa.com/disclaimer-copyright/). We use his estimates per March 2022. Updated estimates from Wu and Xia can be downloaded from https://sites.google.com/view/jingcynthiawu/shadow-rates. We use a copy downloaded on September 10, 2022.
+Updated shadow rate estimates from Krippner (2015) and Wu and Xia (2016) were downloaded from the authors websites, but are only used for comparison plots; these data series are not used in our estimation.The data are publicly available, and copies are provided with this replication package. Estimates from Krippner can be downloaded from https://www.ljkmfa.com/visitors/ and are subject to his disclaimer and copyright statements (https://www.ljkmfa.com/disclaimer-copyright/). We use his estimates per March 2022. Updated estimates from Wu and Xia can be downloaded from https://sites.google.com/view/jingcynthiawu/shadow-rates. We use a copy downloaded on September 10, 2022.
 - Datafile: [SSR_Estimates_2022March.xlsx](data/SSR_Estimates_2022March.xlsx) for Krippner estimates.
 - Datafile: [shadowrate_US.xls](data/shadowrate_US.xls) for Wu-Xia estimates.
 
@@ -80,17 +80,15 @@ Portions of the code use bash (or zsh) scripting, which may require Linux or mac
 - [x] Random seed is set at line **34 in each of the following programs:** **[goVAR.m](goVAR.m), [goVAR200811.m](goVAR200811.m), [goVARshadowrateBlockNonstructural.m](goVARshadowrateBlockNonstructural.m), [goVARshadowrateNonstructural.m](goVARshadowrateNonstructural.m),  [goVARshadowrateGeneral.m](goVARshadowrateGeneral.m), [doVARshadowrateBlockNonstructural.m](doVARshadowrateBlockNonstructural.m), and [doVARshadowrateNonstructural.m](doVARshadowrateNonstructural.m)** 
 - [ ] No Pseudo random generator is used in the analysis described here.
 
-**Additional notes on controlled randomness:**
-
-
-The programs named `bot*.m` are derived from the programs listed above (by using the shell script [preparebatch.sh](preparebatch.sh)) and set the random seed as described above as well. 
-
 Except for [goVAR200811.m](goVAR200811.m), each of the programs listed above executes code in parallel workers using substreams of the global random-generator streams, which is seeded as described above. The substreams are assigned in the following lines: 
 - goVAR.m:260
 - goVAR200811.m:257
 - goVARshadowrateBlockNonstructural.m:276
 - goVARshadowrateGeneral.m:280
 - goVARshadowrateNonstructural.m:275
+
+From the programs listed above, we also derive driver files named `bot*.m` (by using the shell script [preparebatch.sh](preparebatch.sh)) and these inherit the above-described settings for the random seed. 
+
 
 
 ### Memory, Runtime, Storage Requirements
