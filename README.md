@@ -1,4 +1,4 @@
-# Code for „Forecasting with Shadow-Rate VARs“ by Carriero, Clark, Marcellino and Mertens (2024)
+# Replication files for „Forecasting with Shadow-Rate VARs“ by Carriero, Clark, Marcellino and Mertens (2024)
 
 - Andrea Carriero (Queen Mary University of London)
 - Todd Clark (Federal Reserve Bank of Cleveland)
@@ -18,7 +18,7 @@ When reading this README, please note that links to file names work when viewing
 
 ## Overview
 
-The code in this replication package estimates all models discussed in the paper and produces all figures and tables shown in paper and appendix using MATLAB. There are **2** main files, called **[runbatch.m](runbatch.m)**, and **[runtablesandfigures.m](runtablesandfigures.m)** to perform estimation and construct figures and tables, respectively. In addition, the code can be used to reconstruct or update our data inputs from FRED-MD source data, using a single script. The replicator should expect the code to run for about 30 hours on a machine with 32 workers (or cores). The code also works with as few as a single worker, but runtime should be expected to lengthen correspondingly.
+The code in this replication package estimates all models discussed in the paper and produces all figures and tables shown in paper and appendix using MATLAB. There are **2** main files, called **[runbatch.m](runbatch.m)**, and **[runtablesandfigures.m](runtablesandfigures.m)** to perform estimation and construct figures and tables, respectively. In addition, the code can be used to reconstruct or update our data inputs from FRED-MD source data, using a single script. The replicator should expect the code to run for about 35 hours on a machine with 32 workers (or cores). The code also works with as few as a single worker, but runtime should be expected to lengthen correspondingly.
 
  This package also contains a csv file with our shadow rate estimates named [CCMMshadowrateEstimates.csv](CCMMshadowrateEstimates.csv), with further details described below.
 
@@ -44,6 +44,7 @@ The code in this replication package estimates all models discussed in the paper
 ### Details on each Data Source
 
 
+
 | Data.Name  | Data.Files | Location | Provided | Citation |
 | -- | -- | -- | -- | -- | 
 | “FRED-MD” | 2022-09.csv | data/ | TRUE | McCracken and Ng (2016) |
@@ -52,12 +53,17 @@ The code in this replication package estimates all models discussed in the paper
 
 ## Dataset list
 
+
+Our analysis is based on a single data file obtained from FRED-MD. In addition, for comparison plots of our shadow-rate estimates against (updated) estimates produced by Krippner (2015) Wu and Xia (2016) we use two additional data files. 
+
 FRED-MD data were downloaded from the [Federal Reserve Bank of St. Louis](https://www.stlouisfed.org/research/economists/mccracken/fred-databases). We use the 2022 September vintage. A copy of the data is provided as part of this archive. The data are in the public domain.
-- Datafile: [2022-09.csv](data/2022-09.csv)
+
+- Datafile: [data/2022-09.csv](data/2022-09.csv)
 
 Updated shadow rate estimates from Krippner (2015) and Wu and Xia (2016) were downloaded from the authors websites, but are only used for comparison plots; these data series are not used in our estimation.The data are publicly available, and copies are provided with this replication package. Estimates from Krippner can be downloaded from https://www.ljkmfa.com/visitors/ and are subject to his disclaimer and copyright statements (https://www.ljkmfa.com/disclaimer-copyright/). We use his estimates per March 2022. Updated estimates from Wu and Xia can be downloaded from https://sites.google.com/view/jingcynthiawu/shadow-rates. We use a copy downloaded on September 10, 2022.
-- Datafile: [SSR_Estimates_2022March.xlsx](data/SSR_Estimates_2022March.xlsx) for Krippner estimates.
-- Datafile: [shadowrate_US.xls](data/shadowrate_US.xls) for Wu-Xia estimates.
+
+- Datafile: [data/SSR_Estimates_2022March.xlsx](data/SSR_Estimates_2022March.xlsx) for Krippner estimates.
+- Datafile: [data/shadowrate_US.xls](data/shadowrate_US.xls) for Wu-Xia estimates.
 
 
 
@@ -68,16 +74,18 @@ Updated shadow rate estimates from Krippner (2015) and Wu and Xia (2016) were do
 
 
 
-- [x] The replication package provides all dependencies and each script sets up the necessary path variables. 
+- [x] The replication package contains one or more programs to install all dependencies and set up the necessary directory structure.
 
-- Matlab including Statistics and Machine Learning Toolbox and Parallel Computing Toolbox (code was run with Matlab Release 2023b)
-- personal toolbox files maintained by Elmar Mertens (one of the authors), included as part of this package. Also available at https://github.com/elmarmertens/em-matlabbox (Code was run with commit from Dec 30 2024, hash: 84bcdf4)
+(The replication package provides all dependencies and each script sets up the necessary path variables.) 
 
-Portions of the code use bash (or zsh) scripting, which may require Linux or macOS. Use of these code portions is, however, optional and serves merely to regenerate scripts that are provided as part of this replication package under different parameterizations than used in the paper.
+- Matlab including Statistics and Machine Learning Toolbox and Parallel Computing Toolbox (code was run with Matlab Release 2023b, and 2024b)
+- Toolbox files maintained by Elmar Mertens (one of the authors), included as part of this package. Also available at https://github.com/elmarmertens/em-matlabbox (Code was run with commit from Dec 30 2024, hash: 84bcdf4)
+- Optional: TeX Live to compile tables and figures produced by our Matlab codes into PDF files.
+- Optional: Bash or Z shell environments in Linux or MacOS to run helper scripts that are provided as part of this replication package. These scripts  serve merely to regenerate Matlab driver files that are provided as part of this replication package, and their use is not necessary to replicate our results. (The scripts can also be used to generate our Matlab driver files under different parameterizations than used for the paper.)
 
 ### Controlled Randomness
 
-- [x] Random seed is set at line **34 in each of the following programs:** **[goVAR.m](goVAR.m), [goVAR200811.m](goVAR200811.m), [goVARshadowrateBlockNonstructural.m](goVARshadowrateBlockNonstructural.m), [goVARshadowrateNonstructural.m](goVARshadowrateNonstructural.m),  [goVARshadowrateGeneral.m](goVARshadowrateGeneral.m), [doVARshadowrateBlockNonstructural.m](doVARshadowrateBlockNonstructural.m), and [doVARshadowrateNonstructural.m](doVARshadowrateNonstructural.m)** 
+- [x] Random seed is set at line **34 in each of the following programs:** [goVAR.m](goVAR.m), [goVAR200811.m](goVAR200811.m), [goVARshadowrateBlockNonstructural.m](goVARshadowrateBlockNonstructural.m), [goVARshadowrateNonstructural.m](goVARshadowrateNonstructural.m),  [goVARshadowrateGeneral.m](goVARshadowrateGeneral.m), [doVARshadowrateBlockNonstructural.m](doVARshadowrateBlockNonstructural.m), and [doVARshadowrateNonstructural.m](doVARshadowrateNonstructural.m) 
 - [ ] No Pseudo random generator is used in the analysis described here.
 
 Except for [goVAR200811.m](goVAR200811.m), each of the programs listed above executes code in parallel workers using substreams of the global random-generator streams, which is seeded as described above. The substreams are assigned in the following lines: 
@@ -106,7 +114,7 @@ Approximate time needed to reproduce the analyses on a standard (2024) desktop m
 - [ ] 3-14 days
 - [x] > 14 days
 
-Feasible in about 32 hours on a 32 core machine.
+Feasible in about 35 hours on a 32 core machine.
 
 Approximate storage space needed:
 
@@ -126,9 +134,10 @@ Approximate RAM memory needed:
 
 #### Details
 
-The main computational routines last run on a **32-core Intel virtual client with 112 GB of RAM**. Computation took about **30 hours**. 
+The main computational routines were last run on a **32-core Intel virtual client** with Intel(R) Xeon(R) Gold 6248R CPU (3.0 GHz) and **112 GB of RAM** using **Matlab 2023b**. Computation took about **35 hours**. 
 
-Auxiliary code to collect MCMC estimates, and produce tables and figures was last run on a **laptop with Apple Silicon chips and MacOS version 15.2 (and Matlab 2024b) with 16GB of RAM and 200GB of free storage**. 
+Auxiliary code to collect MCMC estimates, and produce tables and figures was last run on a **laptop with Apple Silicon chip**  (M1 pro) and **Matlab 2024b for macOS** with **16GB of RAM**. 
+
 
 
 ## Description of programs/code
@@ -143,13 +152,13 @@ Auxiliary code to collect MCMC estimates, and produce tables and figures was las
 - [goVARshadowrateBlockNonstructural.m](goVARshadowrateBlockNonstructural.m) for the restricted version of the non-structural shadow-rate VAR
 
  
- - In order to apply each dataset to each applicable model, use the driver fiels `botgo*.m`. This set of driver files can also be recreated (and with different settings) by the bash script [preparebatch.sh](preparebatch.sh) as described further below.
+ - In order to apply each dataset to each applicable model, use the driver files `botgo*.m`. This set of driver files can also be recreated (and with different settings) by the bash script [preparebatch.sh](preparebatch.sh) as described further below.
 
 
 Other estimates, tables and figures: To produce all tables and figures of the paper, as well as additional material as shown in the supplementary appendix, call [runtablesandfigures.m](runtablesandfigures.m), which calls the following scripts to create tables and figures:
 - [oosEvaluationTables.m](oosEvaluationTables.m) produces forecast comparison tables (as in Tables 2 and 3 of the paper) based on output stored by the `goVAR*.m` scripts. Comparisons against a linear VAR that omits short-rate data, as in Table 4 of the paper, are compiled by [oosEvaluationTablesAgainstLongYieldsOnly.m](oosEvaluationTablesAgainstLongYieldsOnly.m).
 - [barplotBETAslopes.m](barplotBETAslopes.m) reports the ELB-specific coefficients estimated from the general shadow-rate VAR as reported in Figure 1 of the paper.
-- [showShadowrates.m](showShadowrates.m) produces figures of shadow-rate estimates as shown in Figure 2 in the paper, and stores the time seris of shadow-rate estimates in [CCMMshadowrateEstimates.csv](CCMMshadowrateEstimates.csv). The shadow-rate estimates are obtained from output stored by the `goVAR*.m` scripts.
+- [showShadowrates.m](showShadowrates.m) produces figures of shadow-rate estimates as shown in Figure 2 in the paper, and stores the time series of shadow-rate estimates in [CCMMshadowrateEstimates.csv](CCMMshadowrateEstimates.csv). The shadow-rate estimates are obtained from output stored by the `goVAR*.m` scripts.
 - [oosPlotForecastsSHADOWFFR.m](oosPlotForecastsSHADOWFFR.m) to plot predictive densities for shadow rate and federal funds rate at selected jump offs (as in Figure 3).
 - [showPAIchanges.m](showPAIchanges.m) produces comparison figures of VAR transition coefficients as discussed in the supplement to our paper.
 
@@ -168,29 +177,80 @@ The code is licensed under a BSD license. See [LICENSE.txt](LICENSE.txt) for det
 
 The following instructions should be executed in a Matlab session with the current working directory set to the main folder of the replication package:
 
-- To employ parallel process of `parfor` loops employed by our codes create a parallel pool in Matlab, which requires availability of the Matlab Parallel Computing Toolbox (otherwise the loops will be executed sequentially). Choose a number of parallel workers suitable for your computing environment (in terms of available CPU and RAM memory). For example, to use the default setting for your system, simply use `parpool`; in order to use the code with 32 workers use `parpool(32)`. When no `parpool` is created, `parfor` steps will be executed one-by-one. To employ parallel processing launch `parpool` prior to calling our routines. Depending on system defaults in your Matlab installation, Matlab might also launch `parpool` automatically when encountering the first `parfor` (or `spmd`) command. Also, depending on system defaults, please note that the parallel pool may automatically terminate when idle (and thus needs to be launched again prior to further use).
+### Option 1
 
-- To launch a sequence of out-of-sample runs for all models and datasets considered in the paper, call [runbatch.m](runbatch.m), which calls various `bot*.m` files. Each file creates a `*.mat` file with model-specific results data that is stored in the repository's main directory.
+In a Linux or macOS shell:
 
-- To create all tables and figures for the paper and its supplementary appendix, call [runtablesandfigures.m](runtablesandfigures.m). This script requires that [runbatch.m](runbatch.m) has finished (and the resulting `*.mat` files are stored in the repository's main directory). Outputs are stored in `*.tex` format (for tables) and `*.eps` format (for figures) and stored in a subfolder `foo`. 
+- You can  use the [makefile](makefile) provided with this replication package to perform the steps described above: `make all` performs estimation, creates all tables and figures and compiles the two LaTeX files mentioned above. 
+- By default, the [makefile](makefile) will execute the computational routines in parallel mode, which requires availability of Matlab's Parallel Computing Toolbox. If parallel mode is not available, please replace the [makefile](makefile) calls to [goparbatch.sh](goparbatch.sh) by calls to [goseqbatch.sh](goseqbatch.sh).
+- The [makefile](makefile) uses the scripts [goparbatch.sh](goparbatch.sh) and [goseqbatch.sh](goseqbatch.sh) to launch Matlab and execute our codes. In Linux, these shell scripts assume that the command `matlab` is on the shell path.  In macOS, each of these shell scripts defines an alias `matlab` that points to the installed Matlab version. To adapt this setting to your environment, please edit line 12 in [goparbatch.sh](goparbatch.sh) and [goseqbatch.sh](goseqbatch.sh) as needed.
 
-- When all tables and figures are stored in `foo`, you can compile the LaTeX files [CCMMpaperTablesAndFigures.tex](CCMMpaperTablesAndFigures.tex) and [CCMMsupplementTablesAndFigures.tex](CCMMsupplementTablesAndFigures.tex) to collect figures and tables as they are presented in paper and supplement.
+### Option 2
 
-- In a Linux or macOS shell, you can also use the [makefile](makefile) provided with this replication package to perform the steps described above: `make all` performs estimation (in parallel mode), creates all tables and figures and compiles the two LaTeX files mentioned above. (If parallel mode is not available, please replace the [makefile](makefile) calls to [goparbatch.sh](goparbatch.sh) by calls to [goseqbatch.sh](goseqbatch.sh).)
+When launching our codes in an interactive Matlab session:
 
-### Details
+- If available, and prior to launching our routines, enable parallel processing of `parfor` loops to create a parallel pool in Matlab, which requires the Matlab Parallel Computing Toolbox; otherwise the loops will be executed sequentially. Choose a number of parallel workers suitable for your computing environment (in terms of available CPU and RAM memory). For example, to use the default setting for your system, simply use `parpool`; in order to use the code with 32 workers use `parpool(32)`. When no `parpool` is created, `parfor` steps will be executed one-by-one. Depending on system defaults in your Matlab installation, Matlab might also launch `parpool` automatically when encountering the first `parfor` (or `spmd`) command. In orinciple, it should suffice to launch `parpool` only once per session. But, depending on system defaults, please note that the parallel pool may automatically terminate when idle (and thus needs to be launched again for further use).
+
+- Call [runbatch.m](runbatch.m), which launches a sequence of out-of-sample runs for all models and datasets considered in the paper. Specifically, [runbatch.m](runbatch.m) calls various `bot*.m` files. Each file creates a `*.mat` file with model-specific results data that is stored in the repository's main directory. (This step took us about 35 hours on a virtual client with 32 client.)
+
+- Call [runtablesandfigures.m](runtablesandfigures.m) to create all tables (except Table 1) and figures for the paper and its supplementary appendix, . This script requires that [runbatch.m](runbatch.m) has finished (and the resulting `*.mat` files are stored in the repository's main directory). Outputs are stored in `*.tex` format (for tables) and `*.eps` format (for figures) and stored in a subfolder `foo`. (This step takes a couple of minutes.)
+
+- To recreate the list of variables provided in Table 1: In Matlab, change the working directory to the subfolder [data](data) and execute [generateFREDdata.m](data/generateFREDdata.m) which creates [datalist-fredsxMD20-2022-09.tex](data/datalist-fredsxMD20-2022-09.tex), which corresponds to Table 1 in the paper (after some manual reformatting).
+
+- Optional: When all tables and figures are stored in `foo`, you can compile the LaTeX files [CCMMpaperTablesAndFigures.tex](CCMMpaperTablesAndFigures.tex) and [CCMMsupplementTablesAndFigures.tex](CCMMsupplementTablesAndFigures.tex) to collect figures and tables as they are presented in paper and supplement.
+
+
+### Details 
 
 - All scripts set the MATLAB path to point to toolboxes in [matlabtoolbox](matlabtoolbox). In addition, most scripts collect output in a temporary directory, which is by default created as subfolder `foo` within the main directory (if not present the folder will be created). Edit [localtemp.m](matlabtoolbox/emtools/localtemp.m) to change the location of this temp directory (or place an alternate copy of `localtemp.m` in the main directory of the repository). 
+- All necessary input files are already placed in the main folder of this repository. (See below for recreating or updating these inputs from source data files povided in the [data](data) folder of this repository.)
 - Output is collected in a LaTeX file, which is also compiled at the end of each script (provided a LaTeX installation can be found on the path). To control the compilation of output, please edit [finishwrap.m](matlabtoolbox/emtexbox/finishwrap.m). To avoid collecting output files, comment out the call to [initwrap](initwrap) in each script (and make sure to define instead a variable called `wrap` that is set to empty).
-- The codes employ `parfor` loops that are executed in parallel when a `parpool` has been created in Matlab, which requires availability of the Matlab Parallel Computing Toolbox (otherwise the loops will be executed sequentially).
-- All necessary input files are provided in the main folder of this repository. (See below for recreating or updating these inputs from source data files povided in the [data](data) folder of this repository.)
 
-- Each `bot*m` file is a copy of a corresponding `go` file, but with presets that apply the model to a particular dataset. In a bash shell, you can create this set of `bot` files, by calling the bash script [preparebatch.sh](preparebatch.sh) and pass the appropriate `go` file names as argument; for example `sh preparebatch.sh goVAR*.m` prepares `bot` files for all `go` files in the repo and prepares estimation of each model both with and without longer-run yields data (as needed in the paper). For example, to rerun all results with a different number of MCMC draws, change the value of `MCMCdraws` on line 19 of [preparebatch.sh](preparebatch.sh).
+- To launch out-of-sample runs for a given model, use scripts called `go*.m` (or `bot*m` as described in the next bullet). After computing the out-of-sample runs each of these `go*.m` scripts stores results for further post-processing in a `*.mat` file. While looping over out-of-sample runs in our `go*.m` files, individual iterations may encounter (rare) errors due numerical issues, which are reported on screen. These errors do not lead to abortion of the program; instead, they are caught by the program and the iteration in question is relaunched.
 
-- The main directory contain the bash scripts [goparbatch.sh](goparbatch.sh) and [goseqbatch.sh](goseqbatch.sh) that can be used to launch a sequence of multiple Matlab scripts from the shell. Both shell scripts expect that the names of the Matlab scripts to be executed should be passed as argument list. Both shell scripts execute the arguments in sequence *and in separate Matlab sessions*. 
-- In case of [goparbatch.sh](goparbatch.sh), the Matlab session opens a parallel pool. For example, the shell command `sh gobatch.sh goVAR.m goVARshadowrateBlockNonstructural.m goVARhybrid.m` will launch a command line session of Matlab, start a parallel pool, and then execute [goVAR.m](goVAR.m); once [goVAR.m](goVAR.m) has been executed, the Matlab sessions closes, a new one is reopened for execution of [goVARshadowrateBlockNonstructural.m](goVARshadowrateBlockNonstructural.m) etc. (The shell script works with as many command line arguments as supported by bash and has been written for use on macOS and Linux.) Alternatively, Matlab scripts can, of course, also be called interactively on the Matlab GUI’s command line.
-- To launch out-of-sample runs for a given model, use scripts called `go*.m`. After computing the out-of-sample runs each of these `go*.m` scripts stores results for further post-processing in a `*.mat` file. 
-- While looping over out-of-sample runs in our `go*.m` files, individual iterations may encounter (rare) errors due numerical issues, which are reported on screen. These errors do not lead to abortion of the program; instead, they are caught by the program and the iteration in question is relaunched.
+- Each `bot` file is a copy of a corresponding `go` file, but with presets that apply the model to a particular dataset. In a bash shell, you can create this set of `bot` files, by calling the bash script [preparebatch.sh](preparebatch.sh) and pass the appropriate `go` file names as argument; for example `sh preparebatch.sh goVAR*.m` prepares `bot` files for all `go` files in the repo and prepares estimation of each model both with and without longer-run yields data (as needed in the paper). For example, to rerun all results with a different number of MCMC draws, change the value of `MCMCdraws` on line 19 of [preparebatch.sh](preparebatch.sh).
+
+- The main directory contain the bash scripts [goparbatch.sh](goparbatch.sh) and [goseqbatch.sh](goseqbatch.sh) that can be used to launch a sequence of multiple Matlab scripts from the shell. Both shell scripts expect that the names of the Matlab scripts to be executed should be passed as argument list. Both shell scripts execute the arguments in sequence *and in separate Matlab sessions*.  In case of [goparbatch.sh](goparbatch.sh), the Matlab session opens a parallel pool. For example, the shell command `sh gobatch.sh goVAR.m goVARshadowrateBlockNonstructural.m goVARhybrid.m` will launch a command line session of Matlab, start a parallel pool, and then execute [goVAR.m](goVAR.m); once [goVAR.m](goVAR.m) has been executed, the Matlab sessions closes, a new one is reopened for execution of [goVARshadowrateBlockNonstructural.m](goVARshadowrateBlockNonstructural.m) etc. (The shell script works with as many command line arguments as supported by bash and has been written for use on macOS and Linux.) Alternatively, Matlab scripts can, of course, also be called interactively on the Matlab GUI’s command line. As noted above: In Linux, these shell scripts assume that the command `matlab` is on the shell path.  In macOS, each of these shell scripts defines an alias `matlab` that points to the installed Matlab version. To adapt this setting to your environment, please edit line 12 in [goparbatch.sh](goparbatch.sh) and [goseqbatch.sh](goseqbatch.sh) as needed.
+
+
+## List of tables and programs
+
+
+
+The provided code reproduces:
+
+- [x] All numbers provided in text in the paper
+- [x] All tables and figures in the paper
+- [ ] Selected tables and figures in the paper, as explained and justified below.
+
+Note: Table 1 of the paper conists only of text that lists data mnemonics and transformations and is hard-coded in the paper's TeX file.
+
+| Figure/Table #    | Program                  | Line Number | Output file                      | Note                            |
+|-------------------|--------------------------|-------------|----------------------------------|---------------------------------|
+| Table 1           | data/generateFREDdata.m  | 395ff       | data/datalist-fredsxMD20-2022-09.tex | manually reformatted for paper|
+| Table 2 | [oosEvaluationTables.m](oosEvaluationTables.m)| 328 |tripleComparisonQE-fredsxMD20exYield-2022-09-Standard-p12-vs-shadowrateGeneralVAR-p12-vs-nonstructuralVAR-p12-evalStart201001evalEnd201712.tex |           
+| Table 3 | [oosEvaluationTables.m](oosEvaluationTables.m)| 328 | tripleComparisonQE-fredsxMD20-2022-09-Standard-p12-vs-nonstructuralVAR-p12-vs-blocknonstructuralVAR-p12-evalStart201001evalEnd201712.tex |           
+| Table 4 | [oosEvaluationTablesAgainstLongYieldsOnly.m](oosEvaluationTablesAgainstLongYieldsOnly.m)| 255 |tripleComparisonQE-fredsxMD14longyields-2022-09-standardVAR-p12-vs-nonstructuralVAR-p12-vs-BlocknonstructuralVAR-p12-evalStart201001evalEnd201712.tex |
+| Figure 1          | [barplotBETAslopes.m](barplotBETAslopes.m) |    93ff       |  BETA-ELBshadowrateGeneralAR1SV-RATSbvarshrinkage-p12-202208.eps ||
+| Figure 2, Panel a | [showShadowrates.m](showShadowrates.m) |   139ff        | shadowrate1-p12-fredsxMD20exYield-2022-09-ELBnonstructuralAR1SV-vs-ELBshadowrateGeneralAR1SV-LSAP.eps  | see line 184ff for tabulated values |
+| Figure 2, Panel b | [showShadowrates.m](showShadowrates.m) |    164ff   |  shadowrate1-p12-fredsxMD20-2022-09-ELBblocknonstructuralAR1SV-wuxiakrippner-LSAP.eps | see line 184ff for tabulated values|
+| Figure 3, Panel a  |  [oosPlotForecastsSHADOWFFR.m](oosPlotForecastsSHADOWFFR.m) |    147ff       | FEDFUNDS-fredsxMD20-202209-blocknonstructuralshadowrateAR1SV-predictivedensity1-2020-03-WITHLEGEND.eps  | see 197ff for tabulated values |
+| Figure 3, Panel b  |  [oosPlotForecastsSHADOWFFR.m](oosPlotForecastsSHADOWFFR.m) |    147ff       |  FEDFUNDS-fredsxMD20-202209-blocknonstructuralshadowrateAR1SV-predictivedensity1-2020-09.eps | see 197ff for tabulated values |
+| Table B.1 | [oosEvaluationTables.m](oosEvaluationTables.m)| 328 |tripleComparisonQE-fredsxMD20exYield-2022-09-Standard-p12-vs-shadowrateGeneralVAR-p12-vs-nonstructuralVAR-p12-evalStart201001evalEnd202208.tex |     | supplement |
+| Table B.2 | [oosEvaluationTables.m](oosEvaluationTables.m)| 328 |tripleComparisonQE-fredsxMD20-2022-09-Standard-p12-vs-nonstructuralVAR-p12-vs-blocknonstructuralVAR-p12-evalStart201001evalEnd202208.tex |          supplement |
+| Table B.3 | [oosEvaluationTablesAgainstLongYieldsOnly.m](oosEvaluationTablesAgainstLongYieldsOnly.m)| 255 |tripleComparisonQE-fredsxMD14longyields-2022-09-standardVAR-p12-vs-nonstructuralVAR-p12-vs-BlocknonstructuralVAR-p12-evalStart201001evalEnd202208.tex |       supplement |
+| Figure C.1 , Panel a | [showPAIchanges.m](showPAIchanges.m) | 174ff | PAI-intercept-standardVARAR1SV-fredsxMD20-2022-09 | supplement |
+| Figure C.1 , Panel b | [showPAIchanges.m](showPAIchanges.m) | 174ff | PAI-intercept-ELBblocknonstructuralAR1SV-fredsxMD20-2022-09 | supplement |
+| Figure C.1 , Panel c | [showPAIchanges.m](showPAIchanges.m) | 212ff | PAI-lag1-standardVARAR1SV-fredsxMD20-2022-09 | supplement |
+| Figure C.1 , Panel d | [showPAIchanges.m](showPAIchanges.m) | 212ff | PAI-lag1-ELBblocknonstructuralAR1SV-fredsxMD20-2022-09 | supplement |
+| Figure C.1 , Panel e | [showPAIchanges.m](showPAIchanges.m) | 251ff | PAI-lagOTHER-standardVARAR1SV-fredsxMD20-2022-09 | supplement |
+| Figure C.1 , Panel f | [showPAIchanges.m](showPAIchanges.m) | 251ff | PAI-lagOTHER-ELBblocknonstructuralAR1SV-fredsxMD20-2022-09 | supplement |
+| Figure C.2 , Panel a | [showPAIchanges.m](showPAIchanges.m) | 174ff | PAI-intercept-standardVARAR1SV-fredsxMD20exYield-2022-09 | supplement |
+| Figure C.2 , Panel b | [showPAIchanges.m](showPAIchanges.m) | 174ff | PAI-intercept-ELBblocknonstructuralAR1SV-fredsxMD20exYield-2022-09 | supplement |
+| Figure C.2 , Panel c | [showPAIchanges.m](showPAIchanges.m) | 212ff | PAI-lag1-standardVARAR1SV-fredsxMD20exYield-2022-09 | supplement |
+| Figure C.2 , Panel d | [showPAIchanges.m](showPAIchanges.m) | 212ff | PAI-lag1-ELBblocknonstructuralAR1SV-fredsxMD20exYield-2022-09 | supplement |
+| Figure C.2 , Panel e | [showPAIchanges.m](showPAIchanges.m) | 251ff | PAI-lagOTHER-standardVARAR1SV-fredsxMD20exYield-2022-09 | supplement |
+| Figure C.2 , Panel f | [showPAIchanges.m](showPAIchanges.m) | 251ff | PAI-lagOTHER-ELBblocknonstructuralAR1SV-fredsxMD20exYield-2022-09 | supplement |
 
 
 ## References
