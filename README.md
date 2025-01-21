@@ -1,4 +1,4 @@
-# Replication files for „Forecasting with Shadow-Rate VARs“ by Carriero, Clark, Marcellino and Mertens (2024)
+# Replication package for „Forecasting with Shadow-Rate VARs“ by Carriero, Clark, Marcellino and Mertens (2024)
 
 - Andrea Carriero (Queen Mary University of London)
 - Todd Clark (Federal Reserve Bank of Cleveland)
