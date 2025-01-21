@@ -10,6 +10,7 @@
 !*.sh
 !*.tex
 !makefile
+!README.pdf
 *__genmod*
 !/data
 !/data/*.xls
