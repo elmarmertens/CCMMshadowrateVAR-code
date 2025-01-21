@@ -5,9 +5,6 @@
 - Massimiliano Marcellino (Department of Economics, Baffi, Bidsa, IGIER, Bocconi University and CEPR) 
 - Elmar Mertens (Deutsche Bundesbank; em@elmarmertens.com) *corresponding author* 
 
-
-***WORK IN PROGRESS***
-
 The usual disclaimers apply: the views and results conveyed in our research are solely those of the authors and do not necessarily reflect the views of the Federal Reserve Bank of Cleveland, the Federal Reserve System, the Eurosystem, or the Deutsche Bundesbank.
 
 A manuscript of our paper and and a supplementary online appendix are available here: https://www.elmarmertens.com/research/workingpapers#h.nqkg0ogemt4s
