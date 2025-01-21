@@ -5,10 +5,6 @@ function [lsapDates, lsapLabels] = getLSAPdates()
 
 %% VERSION INFO 
 % AUTHOR    : Elmar Mertens 
-% $DATE     : 04-Jul-2023 10:48:17 $ 
-% $Revision : 1.00 $ 
-% DEVELOPED : 9.14.0.2286388 (R2023a) Update 3 
-% FILENAME  : getLSAPdates.m 
 
 lsapDates = cat(1, datetime(2008,11, 25), datetime(2010,11,3), datetime(2011, 9, 21), datetime(2012,9,13), ...
     datetime(2013,5,22), datetime(2013,12,18), datetime(2014,10,29), ...

@@ -5,10 +5,6 @@ function pcode = fredMDshortlabel(ncode)
 
 %% VERSION INFO
 % AUTHOR    : Elmar Mertens
-% $DATE     : 09-Dec-2019 18:55:22 $
-% $Revision : 1.00 $
-% DEVELOPED : 9.7.0.1247435 (R2019b) Update 2
-% FILENAME  : fredmdPrettylabel.m
 
 
 

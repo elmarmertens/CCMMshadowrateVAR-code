@@ -383,7 +383,7 @@ while m < MCMCreps % using while, not for loop to allow going back in MCMC chain
         alphadraw         =  sqrtiVAlpha_post \ (tildealpha_post + randn(rndStream,thisNareg,1));
         A_(ii,1:ii-1)     = -alphadraw';
     end
-    invA_=A_\EYEn; % compute implied draw from A^-1, needed in step 2b.
+    invA_=A_\EYEn;
 
     %% SV step: Draw mixture states and then volatility states
 
@@ -394,7 +394,7 @@ while m < MCMCreps % using while, not for loop to allow going back in MCMC chain
     Vol_states = Vol_states';
     eta        = Vol_shocks';
 
-    sqrtht     = exp(Vol_states/2); %compute sqrtht^0.5 from volatility states, needed in step 2b
+    sqrtht     = exp(Vol_states/2);
 
 
     %% Draw volatility variances

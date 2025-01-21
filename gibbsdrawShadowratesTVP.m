@@ -5,10 +5,6 @@ function shadowrateDraws = gibbsdrawShadowratesTVP(Y, STATE0, YHAT0, ndxS, sNaN,
 
 %% VERSION INFO
 % AUTHOR    : Elmar Mertens
-% $DATE     : 05-Mar-2021 14:01:43 $
-% $Revision : 1.00 $
-% DEVELOPED : 9.9.0.1592791 (R2020b) Update 5
-% FILENAME  : gibbsdrawShadowrates.m
 
 
 

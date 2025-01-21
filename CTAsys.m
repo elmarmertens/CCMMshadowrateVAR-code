@@ -1,60 +1,7 @@
 function PAI=CTAsys(Y,X,N,K,T,A_,sqrtht,iV,iVb_prior,PAI,rndStream)
 
-% =========================================================================
-% Performs a draw from the conditional posterior of the VAR conditional
-% mean coefficients by using the triangular algorithm. The
-% triangularization achieves computation gains of order N^2 where N is the
-% number of variables in the VAR. Carriero, Clark and Marcellino (2015),
-% Large Vector Autoregressions with stochastic volatility and flexible
-% priors. 
-%
-% The model is:
-%
-%     Y(t) = Pai(L)Y(t-1) + v(t); Y(t) is Nx1; t=1,...,T, L=1,...,p.
-%     v(t) = inv(A)*(LAMBDA(t)^0.5)*e(t); e(t) ~ N(0,I);
-%                _                                         _
-%               |    1          0       0       ...      0  |
-%               |  A(2,1)       1       0       ...      0  |
-%      A =      |  A(3,1)     A(3,2)    1       ...      0  |
-%               |   ...        ...     ...      ...     ... |
-%               |_ A(N,1)      ...     ...   A(N,N-1)    1 _|
-%
-%     Lambda(t)^0.5 = diag[sqrt_h(1,t)  , .... , sqrt_h(N,t)];
-%
-% INPUTS
-% Data and pointers:
-% Y     = (TxN) matrix of data appearing on the LHS of the VAR
-% X     = (TxKxN) matrix of data appearing on the RHS of the VAR (separate for every equation)
-% N     = scalar, #of variables in VAR 
-% K     = scalar, #of regressors (=N*p+1)  
-% T     = scalar, #of observations
-% The matrix X needs to be ordered as: [1, y(t-1), y(t-2),..., y(t-p)]
-% 
-% Error variance stuff:
-% invA_   = (NxN) inverse of lower triangular covariance matrix A
-% sqrtht = (TxN) time series of diagonal elements of volatility matrix 
-% For a homosckedastic system, with Sigma the error variance, one can
-% perform the LDL decomposition (command [L,D]=LDL(Sigma)) and set inv_A=L
-% and sqrtht=repmat(sqrt(diag(D)'),T,1). 
-%
-% Priors:
-% iV          = (NKxNK) precision matrix for VAR coefficients 
-% iVB_prior   = (NKx1) (prior precision)*(prior mean)
-% Note 1:iV is the inverse of the prior matrix and iVB_prior is the product
-% of iV and the prior mean vector, which both need to be computed only once,
-% before the start of the main MCMC loop.
-% Note 2:in this code, iV is assumed block-diagonal. This implies that the
-% prior is independent across equations. This includes most of the priors 
-% usually considered, including the Minnesota one.  To use a non-block
-% diagonal iV one needs to modify the code using the recursions illustrated 
-% in equations (37) and (38).  
-%
-% OUTPUT
-% One draw from (PAI|A,Lambda,data)
-% PAI=[Pai(0), Pai(1), ..., Pai(p)].
-% =========================================================================
+% adapted from CTA.m to handle regressor switches in restricted non-structural shadow-rate VAR
 
-% y_til=Y*A_';
 zdraws = randn(rndStream,K,N);
 XPAI   = NaN(T,N);
 

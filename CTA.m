@@ -45,9 +45,7 @@ function PAI=CTA(Y,X,N,K,~,A_,sqrtht,iV,iVb_prior,PAI,rndStream)
 % before the start of the main MCMC loop.
 % Note 2:in this code, iV is assumed block-diagonal. This implies that the
 % prior is independent across equations. This includes most of the priors
-% usually considered, including the Minnesota one.  To use a non-block
-% diagonal iV one needs to modify the code using the recursions illustrated
-% in equations (37) and (38).
+% usually considered, including the Minnesota one. 
 %
 % OUTPUT
 % One draw from (PAI|A,Lambda,data)

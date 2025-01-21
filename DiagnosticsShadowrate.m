@@ -1,13 +1,6 @@
 function PSRFi = DiagnosticsShadowrate(shadowrateDraws,n)
 
-% for i=1:T
-% display('--------------------------');
-% display(['shadowrate obs.' num2str(i)]);
-% PSRFi(i)=mean(psrf(shadowrateDraws(:,i))); %#ok<AGROW>
-% display(['Average PSRF  ' num2str(PSRFi(i)) ]);
-% IFi(i,:)=ineff(shadowrateDraws(:,i)); %#ok<AGROW>
-% display(['Average IF (4% 8% 15% tapering) ' num2str(IFi(i,:)) ]);
-% end
+% adapted from Diagnostics.m
 
 [MCMCdraws,Ns,elbObs] = size(shadowrateDraws); %#ok<ASGLU>
 

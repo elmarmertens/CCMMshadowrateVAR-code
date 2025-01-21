@@ -87,7 +87,6 @@ Y = data(p+1:end,:);
 [T,K]=size(X);
 Kshadow       = K - p * Nshadowrates; % Number of standard BVAR regressors
 Kshadowlag    = Kshadow - 1 ;         % number of standard (endogenous) regressors (i.e. w/o intercept)
-% ndxKshadowlag = 1 + (1 : Kshadowlag); % location of the Klag regressors in X, only used to assess stability of partitioned VAR transition
 
 
 % store original data matrices
@@ -95,8 +94,6 @@ Y0 = Y;
 X0 = X;
 % generate state vector for forecast jumpoff
 ndxYIELDS     = union(ndxSHADOWRATE, ndxOTHERYIELDS);
-% ndxYIELDLAGS  = cat(2, false, repmat(ismember(1:N, ndxYIELDS), 1, p)); % prepend by false for CONST
-% ndxSHADOWRATELAGS = cat(2, false, repmat(ismember(1:N, ndxSHADOWRATE), 1, p)); % used for shadow-rate sampling
 Nyields       = length(ndxYIELDS);
 
 % check that shadow rates are ordered on top:
@@ -430,7 +427,7 @@ while m < MCMCreps % using while, not for loop to allow going back in MCMC chain
         alphadraw         =  sqrtiVAlpha_post \ (tildealpha_post + randn(rndStream,thisNareg,1));
         A_(ii,1:ii-1)     = -alphadraw';
     end
-    invA_=A_\EYEn; % compute implied draw from A^-1, needed in step 2b.
+    invA_=A_\EYEn;
     
     %% SV step: Draw mixture states and then volatility states
     
@@ -441,7 +438,7 @@ while m < MCMCreps % using while, not for loop to allow going back in MCMC chain
     Vol_states = Vol_states';
     eta        = Vol_shocks';
     
-    sqrtht     = exp(Vol_states/2); %compute sqrtht^0.5 from volatility states, needed in step 2b
+    sqrtht     = exp(Vol_states/2);
     
 
     %% Draw volatility variances
