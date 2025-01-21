@@ -170,6 +170,7 @@ for thisd = 1 : length(DATALABEL)
                 end
             end
         end
+        
         %% plot intercepts per equation
         thisfig = figure;
         
@@ -251,11 +252,7 @@ for thisd = 1 : length(DATALABEL)
         
         thesedevs = reshape(abs(PAIdevs(1+N+1:end,:,:)), N * N * (p - 1), []);
         
-        % find variables with largest devs
-        %     maxdev = max(thesedevs, [], 2);
-        %     [maxdev,ndx] = sort(maxdev, 'desc');
-        %     thesendx = sort(ndx(maxdev > 1.5));
-        
+       
         hb = surf(ydates(T0:end),1:N*N * (p - 1),thesedevs);
         
         if isempty(maxLagOTHER)

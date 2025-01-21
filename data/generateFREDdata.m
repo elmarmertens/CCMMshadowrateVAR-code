@@ -102,10 +102,6 @@ for this = {...
         legend(h, 'BAA10Y', 'BAAFM')
     end
 
-    % ndxFFR      = strcmp(names, 'FEDFUNDS');
-    % spreadcheck = rawdata(:,ndxBAA) - rawdata(:,ndxFFR);
-    % checkdiff(spreadcheck, rawdata(:,ndxBAAFFM));
-
     % augment FREDMD
     rawdata = [rawdata, BAA10Y]; %#ok<AGROW>
     names   = cat(2, names, 'BAA10Y');
@@ -270,16 +266,6 @@ for this = {...
     dates=dates(3:T,:);
     % T = length(dates);
 
-    % =========================================================================
-    % REMOVE OUTLIERS: EM dropped
-    % Use function remove_outliers.m (see for definition of outliers)
-    %   Output data: matrix containing transformed series after removal of outliers
-    %   Output n: matrix containing number of outliers removed for each series
-    % [~,n]=remove_outliers(yt);
-    %
-    % disp('there are quite a few outliers:')
-    % display(n)
-
     data = yt;
 
     % =========================================================================
@@ -405,98 +391,11 @@ for this = {...
     %% define minnesota prior means
     setMinnesotaMean
 
-    %% generates table of variables
+    %% tabulate variable definitions
     varlabels = fredMDprettylabel(ncode);
+    N = length(varlabels);
 
     filename = sprintf('datalist-%s.tex', outputlabel);
-    fid = fopen(filename, 'wt');
-
-    fprintf(fid, '\\begin{center}\n');
-    fprintf(fid, '\\begin{tabular}{lll}\n');
-    fprintf(fid, '\\toprule\n');
-    fprintf(fid, 'Variable & FRED-MD code & tcode ');
-    fprintf(fid, '\\\\\n');
-    fprintf(fid, '\\midrule\n');
-    for n = 1 : N
-        fprintf(fid, '%s ', varlabels{n});
-        fprintf(fid, '& %s ', ncode{n});
-        fprintf(fid, '& %d ', tcode(n));
-        fprintf(fid, '\\\\\n');
-    end
-    fprintf(fid, '\\bottomrule\n');
-    fprintf(fid, '\\end{tabular}\n');
-    fprintf(fid, '\\end{center}\n');
-    fprintf(fid, '\n');
-    fprintf(fid, 'Note: ');
-    fprintf(fid, 'Data obtained from the %s vintage of FRED-MD. ', strtok(csv_in, '.'));
-    if doQuarterly
-        fprintf(fid, 'Quarterly observations (constructed from monthly averages) ');
-    else
-        fprintf(fid, 'Monthly observations ');
-    end
-    % fprintf(fid, 'from %s to %s. ', datestryymm(dates(1)), datestryymm(dates(end)));
-    fprintf(fid, 'from %s to %s. ', datestr(dates(1), 'yyyy:mm'), datestr(dates(end), 'yyyy:mm'));
-    fprintf(fid, '%s \n', fredMDtcodeNote);
-    fclose(fid);
-    type(filename)
-
-    %% generates alt table of variables: expressive transformation
-    varlabels = fredMDprettylabel(ncode);
-    N = length(varlabels);
-
-    filename = sprintf('datalist2-%s.tex', outputlabel);
-    fid = fopen(filename, 'wt');
-
-    fprintf(fid, '\\begin{center}\n');
-    fprintf(fid, '\\begin{tabular}{lll}\n');
-    fprintf(fid, '\\toprule\n');
-    fprintf(fid, 'Variable & FRED-MD code & transformation ');
-    fprintf(fid, '\\\\\n');
-    fprintf(fid, '\\midrule\n');
-    for n = 1 : N
-        fprintf(fid, '%s ', varlabels{n});
-        fprintf(fid, '& %s ', ncode{n});
-
-        switch tcode(n)
-            case 1
-                % % no transformation
-            case 2
-                fprintf(fid, '& %s\n', '\ensuremath{\Delta x_t}');
-            case 4
-                fprintf(fid, '& %s\n', '\ensuremath{\log(x_t)}');
-            case 5
-                if doQuarterly
-                    fprintf(fid, '& %s\n', '\ensuremath{\Delta\log(x_t) \cdot 400}');
-                else
-                    fprintf(fid, '& %s\n', '\ensuremath{\Delta\log(x_t) \cdot 1200}');
-                end
-            otherwise
-                error houston
-        end
-
-        fprintf(fid, '\\\\\n');
-    end
-    fprintf(fid, '\\bottomrule\n');
-    fprintf(fid, '\\end{tabular}\n');
-    fprintf(fid, '\\end{center}\n');
-    fprintf(fid, '\n');
-    fprintf(fid, 'Note: ');
-    fprintf(fid, 'Data obtained from the %s vintage of FRED-MD. ', strtok(csv_in, '.'));
-    if doQuarterly
-        fprintf(fid, 'Quarterly observations (constructed from monthly averages) ');
-    else
-        fprintf(fid, 'Monthly observations ');
-    end
-    fprintf(fid, 'from %s to %s. ', datestr(dates(1), 'yyyy:mm'), datestr(dates(end), 'yyyy:mm'));
-    % fprintf(fid, '%s \n', fredMDtcodeNote);
-    fclose(fid);
-    type(filename)
-
-    %% generates alt table of variables: transformation and minnesota mean
-    varlabels = fredMDprettylabel(ncode);
-    N = length(varlabels);
-
-    filename = sprintf('datalist3-%s.tex', outputlabel);
     fid = fopen(filename, 'wt');
 
     fprintf(fid, '\\begin{center}\n');
@@ -547,40 +446,7 @@ for this = {...
     fclose(fid);
     type(filename)
 
-    %% generates some stuff to collect latex tables
-    varlabels = fredMDprettylabel(ncode);
-    N = length(varlabels);
-
-    filename = 'scratch.tex';
-    fid = fopen(filename, 'wt');
-
-    fprintf(fid, 'LABELS:\n');
-    for n = 1 : N
-        fprintf(fid, '%s\n', varlabels{n});
-    end
-    fprintf(fid, '\n');
-
-    fprintf(fid, 'NAMES:\n');
-    for n = 1 : N
-        fprintf(fid, '%s\n', ncode{n});
-    end
-
-    fprintf(fid, 'FLOAT:\n');
-    for n = 1 : N
-        fprintf(fid, '\\subfloat[%s]{\\includegraphics[width=\\picwid]{pdf%s-\\jumpoff}\\label{subfig:%s-\\jumpoff}}\n', varlabels{n}, ncode{n}, ncode{n});
-        if mod(n,3) == 0
-            fprintf(fid, '\\\\\n');
-        else
-            fprintf(fid, '\\quad\n');
-        end
-    end
-
-
-
-
-    fclose(fid);
-    type(filename)
-
+   
 end
 
 %% finish
