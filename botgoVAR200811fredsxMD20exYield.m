@@ -1,6 +1,6 @@
-%% Standard linear VAR of <<Forecasting with Shadow-Rate VARs>>
-% by Carriero, Clark, Marcellino and Mertens (2021)
-% The working paper and supplementary appendices are available here: https://doi.org/10.26509/frbc-wp-202109
+%% Standard linear VAR of <<Forecasting with Shadow-Rate VARs>> per Nov 2008 (last pre ELB obs)
+% by Carriero, Clark, Marcellino and Mertens (2025)
+% The working paper and supplementary appendices are available here: https://github.com/elmarmertens/CCMMshadowrateVAR-code
 %
 % Recursive estimation of quasi-real-time forecasts
 

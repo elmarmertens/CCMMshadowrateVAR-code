@@ -1,6 +1,6 @@
 %% general version VAR of <<Forecasting with Shadow-Rate VARs>>
-% by Carriero, Clark, Marcellino and Mertens (2021)
-% The working paper and supplementary appendices are available here: https://doi.org/10.26509/frbc-wp-202109
+% by Carriero, Clark, Marcellino and Mertens (2025)
+% The working paper and supplementary appendices are available here: https://github.com/elmarmertens/CCMMshadowrateVAR-code
 %
 % Recursive estimation of quasi-real-time forecasts
 
