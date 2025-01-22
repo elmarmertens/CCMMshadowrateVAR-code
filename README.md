@@ -7,7 +7,7 @@
 
 The usual disclaimers apply: the views and results conveyed in our research are solely those of the authors and do not necessarily reflect the views of the Federal Reserve Bank of Cleveland, the Federal Reserve System, the Eurosystem, or the Deutsche Bundesbank.
 
-A manuscript of our paper and and a supplementary online appendix are available here: https://www.elmarmertens.com/research/workingpapers#h.nqkg0ogemt4s
+A manuscript of our paper and a supplementary online appendix are available here: https://www.elmarmertens.com/research/workingpapers#h.nqkg0ogemt4s
 
 This replication package is maintained at https://github.com/elmarmertens/CCMMshadowrateVAR-code.
 
@@ -75,24 +75,24 @@ Updated shadow rate estimates from Krippner (2015) and Wu and Xia (2016) were do
 
 (The replication package provides all dependencies and each script sets up the necessary path variables.) 
 
-- Matlab including Statistics and Machine Learning Toolbox and Parallel Computing Toolbox (code was run with Matlab Release 2023b, and 2024b)
+- MATLAB including Statistics and Machine Learning Toolbox and Parallel Computing Toolbox (code was run with MATLAB Release 2023b, and 2024b)
 - Toolbox files maintained by Elmar Mertens (one of the authors), included as part of this package. Also available at https://github.com/elmarmertens/em-matlabbox (Code was run with commit from Dec 30 2024, hash: 84bcdf4)
-- Optional: TeX Live to compile tables and figures produced by our Matlab codes into PDF files.
-- Optional: Bash or Z shell environments in Linux or MacOS to run helper scripts that are provided as part of this replication package. These scripts  serve merely to regenerate Matlab driver files that are provided as part of this replication package, and their use is not necessary to replicate our results. (The scripts can also be used to generate our Matlab driver files under different parameterizations than used for the paper.)
+- Optional: TeX Live to compile tables and figures produced by our MATLAB code into PDF files.
+- Optional: Bash or Zsh shell environments in Linux or macOS (henceforth "Bash") to run helper scripts that are provided as part of this replication package. These scripts  serve merely to regenerate MATLAB driver files that are provided as part of this replication package, and their use is not necessary to replicate our results. (The scripts can also be used to generate our MATLAB driver files under different parametrizations than used for the paper.)
 
 ### Controlled Randomness
 
 - [x] Random seed is set at line **34 in each of the following programs:** [goVAR.m](goVAR.m), [goVAR200811.m](goVAR200811.m), [goVARshadowrateBlockNonstructural.m](goVARshadowrateBlockNonstructural.m), [goVARshadowrateNonstructural.m](goVARshadowrateNonstructural.m),  [goVARshadowrateGeneral.m](goVARshadowrateGeneral.m), [doVARshadowrateBlockNonstructural.m](doVARshadowrateBlockNonstructural.m), and [doVARshadowrateNonstructural.m](doVARshadowrateNonstructural.m) 
 - [ ] No Pseudo random generator is used in the analysis described here.
 
-Except for [goVAR200811.m](goVAR200811.m), each of the programs listed above executes code in parallel workers using substreams of the global random-generator streams, which is seeded as described above. The substreams are assigned in the following lines: 
+Except for [goVAR200811.m](goVAR200811.m), each of the programs listed above executes code in parallel workers using substreams of the global random-generator streams, which is seeded as described above. The substreams are assigned at the following code lines: 
 - goVAR.m:260
 - goVAR200811.m:257
 - goVARshadowrateBlockNonstructural.m:276
 - goVARshadowrateGeneral.m:280
 - goVARshadowrateNonstructural.m:275
 
-From the programs listed above, we also derive driver files named `bot*.m` (by using the shell script [preparebatch.sh](preparebatch.sh)) and these inherit the above-described settings for the random seed. 
+From the programs listed above, we also derive MATLAB driver files named `bot*.m` (by using the shell script [preparebatch.sh](preparebatch.sh) as detailed below) and these inherit the above-described settings for the random seed. 
 
 
 
@@ -131,9 +131,9 @@ Approximate RAM memory needed:
 
 #### Details
 
-The main computational routines were last run on a **32-core Intel virtual client** with Intel(R) Xeon(R) Gold 6248R CPU (3.0 GHz) and **112 GB of RAM** using **Matlab 2023b**. Computation took about **35 hours**. 
+The main computational routines were last run on a **32-core Intel virtual client** with Intel(R) Xeon(R) Gold 6248R CPU (3.0 GHz) and **112 GB of RAM** using **MATLAB 2023b**. Computation took about **35 hours**. 
 
-Auxiliary code to collect MCMC estimates, and produce tables and figures was last run on a **laptop with Apple Silicon chip**  (M1 pro) and **Matlab 2024b for macOS** with **16GB of RAM**. 
+Auxiliary code to collect MCMC estimates, and produce tables and figures was last run on a **laptop with Apple Silicon chip**  (M1 pro) and **MATLAB 2024b for macOS** with **16GB of RAM**. 
 
 
 
@@ -144,12 +144,12 @@ Auxiliary code to collect MCMC estimates, and produce tables and figures was las
  
  To produce quasi-real estimates of each model defined in the paper, there are various `go*.m` files: 
 - [goVAR.m](goVAR.m) for the standard linear VAR. ([goVAR200811.m](goVAR200811.m) estimates the linear VAR using only data through 2008; these estimates are used as reference point in our analysis of parameter changes of various models described in the supplement.)
-- [goVARshadowrateGeneral.m](goVARshadowrateGeneral.m) for the general shadow rate VAR (applies only to the exYield data set provided in [fredsxMD20exYield-2022-09.csv](fredsxMD20exYield-2022-09.csv)).
+- [goVARshadowrateGeneral.m](goVARshadowrateGeneral.m) for the general shadow rate VAR (applies only to the exYield dataset provided in [fredsxMD20exYield-2022-09.csv](fredsxMD20exYield-2022-09.csv)).
 - [goVARshadowrateNonstructural.m](goVARshadowrateNonstructural.m) for the unrestricted version of the non-structural shadow-rate VAR
 - [goVARshadowrateBlockNonstructural.m](goVARshadowrateBlockNonstructural.m) for the restricted version of the non-structural shadow-rate VAR
 
  
- - In order to apply each dataset to each applicable model, use the driver files `botgo*.m`. This set of driver files can also be recreated (and with different settings) by the bash script [preparebatch.sh](preparebatch.sh) as described further below.
+ - In order to apply each dataset to each applicable model, use the MATLAB driver files `botgo*.m`. This set of driver files can also be re-created (and with different settings) by the Bash script [preparebatch.sh](preparebatch.sh) as described further below.
 
 
 Other estimates, tables and figures: To produce all tables and figures of the paper, as well as additional material as shown in the supplementary appendix, call [runtablesandfigures.m](runtablesandfigures.m), which calls the following scripts to create tables and figures:
@@ -163,7 +163,7 @@ All core scripts are in the main directory. In addition, there are the following
 - [data](data) contains raw input data, and the script [generateFREDdata.m](data/generateFREDdata.m) to produce input files, named `fredsxMD*.csv`, as needed by the estimation routines (copies of these input files are also provided in the main folder).
 - [matlabtoolbox](matlabtoolbox) for general utilities (also available at https://github.com/elmarmertens/em-matlabbox).
 - By default, estimation results are stored as `*.mat` files in the main folder of the replication package.
-- The subfolder `foo` will be created inside the main filder by our routines for creating tables and figures.
+- The subfolder `foo` will be created inside the main folder by our routines for creating tables and figures.
 
 
 ### License for Code
@@ -172,42 +172,42 @@ The code is licensed under a BSD license. See [LICENSE.txt](LICENSE.txt) for det
 
 ## Instructions to Replicators
 
-The following instructions should be executed in a Matlab session with the current working directory set to the main folder of the replication package:
+The following instructions should be executed in a MATLAB session with the current working directory set to the main folder of the replication package:
 
 ### Option 1
 
 In a Linux or macOS shell:
 
 - You can  use the [makefile](makefile) provided with this replication package to perform the steps described above: `make all` performs estimation, creates all tables and figures and compiles the two LaTeX files mentioned above. 
-- By default, the [makefile](makefile) will execute the computational routines in parallel mode, which requires availability of Matlab's Parallel Computing Toolbox. If parallel mode is not available, please replace the [makefile](makefile) calls to [goparbatch.sh](goparbatch.sh) by calls to [goseqbatch.sh](goseqbatch.sh).
-- The [makefile](makefile) uses the scripts [goparbatch.sh](goparbatch.sh) and [goseqbatch.sh](goseqbatch.sh) to launch Matlab and execute our codes. In Linux, these shell scripts assume that the command `matlab` is on the shell path.  In macOS, each of these shell scripts defines an alias `matlab` that points to the installed Matlab version. To adapt this setting to your environment, please edit line 12 in [goparbatch.sh](goparbatch.sh) and [goseqbatch.sh](goseqbatch.sh) as needed.
+- By default, the [makefile](makefile) will execute the computational routines in parallel mode, which requires availability of MATLAB's Parallel Computing Toolbox. If parallel mode is not available, please replace the [makefile](makefile) calls to [goparbatch.sh](goparbatch.sh) by calls to [goseqbatch.sh](goseqbatch.sh).
+- The [makefile](makefile) uses the scripts [goparbatch.sh](goparbatch.sh) and [goseqbatch.sh](goseqbatch.sh) to launch MATLAB and execute our code. In Linux, these shell scripts assume that the command `matlab` is on the shell path.  In macOS, each of these shell scripts defines an alias `matlab` that points to the installed MATLAB version. To adapt this setting to your environment, please edit line 12 in [goparbatch.sh](goparbatch.sh) and [goseqbatch.sh](goseqbatch.sh) as needed.
 
 ### Option 2
 
-When launching our codes in an interactive Matlab session:
+When launching our code in an interactive MATLAB session:
 
-- If available, and prior to launching our routines, enable parallel processing of `parfor` loops to create a parallel pool in Matlab, which requires the Matlab Parallel Computing Toolbox; otherwise the loops will be executed sequentially. Choose a number of parallel workers suitable for your computing environment (in terms of available CPU and RAM memory). For example, to use the default setting for your system, simply use `parpool`; in order to use the code with 32 workers use `parpool(32)`. When no `parpool` is created, `parfor` steps will be executed one-by-one. Depending on system defaults in your Matlab installation, Matlab might also launch `parpool` automatically when encountering the first `parfor` (or `spmd`) command. In orinciple, it should suffice to launch `parpool` only once per session. But, depending on system defaults, please note that the parallel pool may automatically terminate when idle (and thus needs to be launched again for further use).
+- If available, and prior to launching our routines, enable parallel processing of `parfor` loops to create a parallel pool in MATLAB, which requires the MATLAB Parallel Computing Toolbox; otherwise the loops will be executed sequentially. Choose a number of parallel workers suitable for your computing environment (in terms of available CPU and RAM memory). For example, to use the default setting for your system, simply use `parpool`; in order to use the code with 32 workers use `parpool(32)`. When no `parpool` is created, `parfor` steps will be executed one-by-one. Depending on system defaults in your MATLAB installation, MATLAB might also launch `parpool` automatically when encountering the first `parfor` (or `spmd`) command. In principle, it should suffice to launch `parpool` only once per session. But, depending on system defaults, please note that the parallel pool may automatically terminate when idle (and thus needs to be launched again for further use).
 
 - Call [runbatch.m](runbatch.m), which launches a sequence of out-of-sample runs for all models and datasets considered in the paper. Specifically, [runbatch.m](runbatch.m) calls various `bot*.m` files. Each file creates a `*.mat` file with model-specific results data that is stored in the repository's main directory. (This step took us about 35 hours on a virtual client with 32 cores.)
 
-- Call [runtablesandfigures.m](runtablesandfigures.m) to create all tables (except Table 1) and figures for the paper and its supplementary appendix, . This script requires that [runbatch.m](runbatch.m) has finished (and the resulting `*.mat` files are stored in the repository's main directory). Outputs are stored in `*.tex` format (for tables) and `*.eps` format (for figures) and stored in a subfolder `foo`. (This step takes a couple of minutes.)
+- Call [runtablesandfigures.m](runtablesandfigures.m) to create all tables and figures for the paper and its supplementary appendix (with the exception of Table 1). This script requires that [runbatch.m](runbatch.m) has finished (and the resulting `*.mat` files are stored in the repository's main directory). Outputs are stored in `*.tex` format (for tables) and `*.eps` format (for figures) and stored in a subfolder `foo`. (This step takes a couple of minutes.)
 
-- To recreate the list of variables provided in Table 1: In Matlab, change the working directory to the subfolder [data](data) and execute [generateFREDdata.m](data/generateFREDdata.m) which creates [datalist-fredsxMD20-2022-09.tex](data/datalist-fredsxMD20-2022-09.tex), which corresponds to Table 1 in the paper (after some manual reformatting).
+- To re-create the list of variables provided in Table 1: In MATLAB, change the working directory to the subfolder [data](data) and execute [generateFREDdata.m](data/generateFREDdata.m) which creates [datalist-fredsxMD20-2022-09.tex](data/datalist-fredsxMD20-2022-09.tex). The resulting TeX file corresponds to Table 1 in the paper (after some manual reformatting).
 
-- Optional: When all tables and figures are stored in `foo`, you can compile the LaTeX files [CCMMpaperTablesAndFigures.tex](CCMMpaperTablesAndFigures.tex) and [CCMMsupplementTablesAndFigures.tex](CCMMsupplementTablesAndFigures.tex) to collect figures and tables as they are presented in paper and supplement.
+- Optional: When all tables and figures are stored in `foo`, you can compile the LaTeX files [CCMMpaperTablesAndFigures.tex](CCMMpaperTablesAndFigures.tex) and [CCMMsupplementTablesAndFigures.tex](CCMMsupplementTablesAndFigures.tex) to collect the figures and tables from paper and supplement.
 
 
 ### Details 
 
 - All scripts set the MATLAB path to point to toolboxes in [matlabtoolbox](matlabtoolbox). In addition, most scripts collect output in a temporary directory, which is by default created as subfolder `foo` within the main directory (if not present the folder will be created). Edit [localtemp.m](matlabtoolbox/emtools/localtemp.m) to change the location of this temp directory (or place an alternate copy of `localtemp.m` in the main directory of the repository). 
-- All necessary input files are already placed in the main folder of this repository. (See below for recreating or updating these inputs from source data files povided in the [data](data) folder of this repository.)
+- All necessary input files are already placed in the main folder of this repository. (See below for recreating or updating these inputs from source data files provided in the [data](data) folder of this repository.)
 - Output is collected in a LaTeX file, which is also compiled at the end of each script (provided a LaTeX installation can be found on the path). To control the compilation of output, please edit [finishwrap.m](matlabtoolbox/emtexbox/finishwrap.m). To avoid collecting output files, comment out the call to [initwrap](initwrap) in each script (and make sure to define instead a variable called `wrap` that is set to empty).
 
 - To launch out-of-sample runs for a given model, use scripts called `go*.m` (or `bot*.m` as described in the next bullet). After computing the out-of-sample runs each of these `go*.m` scripts stores results for further post-processing in a `*.mat` file. While looping over out-of-sample runs in our `go*.m` files, individual iterations may encounter (rare) errors due numerical issues, which are reported on screen. These errors do not lead to abortion of the program; instead, they are caught by the program and the iteration in question is relaunched.
 
-- Each `bot*.m` file is a copy of a corresponding `go*.m` file, but with presets that apply the model to a particular dataset. In a bash shell, you can create this set of `bot*.m` files, by calling the bash script [preparebatch.sh](preparebatch.sh) and pass the appropriate `go*.m` file names as argument; for example `sh preparebatch.sh goVAR*.m` prepares `bot*.m` files for all `go*.m` files in the repo and prepares estimation of each model both with and without longer-run yields data (as needed in the paper). For example, to rerun all results with a different number of MCMC draws, change the value of `MCMCdraws` on line 19 of [preparebatch.sh](preparebatch.sh).
+- Each `bot*.m` file is a copy of a corresponding `go*.m` file, but with presets that apply the model to a particular dataset. In Bash, you can create this set of `bot*.m` files, by calling the Bash script [preparebatch.sh](preparebatch.sh) and pass the appropriate `go*.m` file names as argument. For example `sh preparebatch.sh goVAR*.m` prepares `bot*.m` files for all `go*.m` files in the repo and prepares estimation of each model with and without longer-run yields data (as needed in the paper). Also, if `goVAR.m` is included in the argument list when calling [preparebatch.sh](preparebatch.sh), an additional MATLAB driver file is created that estimates the linear VAR to data that omits shorter-run yields affected by the effective lower bound. The script [preparebatch.sh](preparebatch.sh) can also be used to vary other parameters for the out-of-sample runs. For example, to create `botgo*.m` files that employ a different number of MCMC draws, change the value of `MCMCdraws` on line 19 of [preparebatch.sh](preparebatch.sh).
 
-- The main directory contains the bash scripts [goparbatch.sh](goparbatch.sh) and [goseqbatch.sh](goseqbatch.sh) that can be used to launch a sequence of multiple Matlab scripts from the shell. Both shell scripts expect that the names of the Matlab scripts to be executed should be passed as argument list. Both shell scripts execute the arguments in sequence *and in separate Matlab sessions*.  In case of [goparbatch.sh](goparbatch.sh), the Matlab session opens a parallel pool. For example, the shell command `sh gobatch.sh goVAR.m goVARshadowrateBlockNonstructural.m goVARhybrid.m` will launch a command line session of Matlab, start a parallel pool, and then execute [goVAR.m](goVAR.m); once [goVAR.m](goVAR.m) has been executed, the Matlab sessions closes, a new one is reopened for execution of [goVARshadowrateBlockNonstructural.m](goVARshadowrateBlockNonstructural.m) etc. (The shell script works with as many command line arguments as supported by bash and has been written for use on macOS and Linux.) Alternatively, Matlab scripts can, of course, also be called interactively on the Matlab GUI’s command line. As noted above: In Linux, these shell scripts assume that the command `matlab` is on the shell path.  In macOS, each of these shell scripts defines an alias `matlab` that points to the installed Matlab version. To adapt this setting to your environment, please edit line 12 in [goparbatch.sh](goparbatch.sh) and [goseqbatch.sh](goseqbatch.sh) as needed.
+- The main directory contains the Bash scripts [goparbatch.sh](goparbatch.sh) and [goseqbatch.sh](goseqbatch.sh) that can be used to launch a sequence of multiple MATLAB scripts from the shell. Both shell scripts expect that the names of the MATLAB scripts to be executed should be passed as argument list. Both shell scripts execute the arguments in sequence *and in separate MATLAB sessions*.  In case of [goparbatch.sh](goparbatch.sh), the MATLAB session opens a parallel pool. For example, the shell command `sh gobatch.sh goVAR.m goVARshadowrateBlockNonstructural.m goVARhybrid.m` will launch a command line session of MATLAB, start a parallel pool, and then execute [goVAR.m](goVAR.m); once [goVAR.m](goVAR.m) has been executed, the MATLAB session closes, a new one is reopened for execution of [goVARshadowrateBlockNonstructural.m](goVARshadowrateBlockNonstructural.m) etc. (The shell script works with as many command line arguments as supported by Bash and has been written for use on macOS and Linux.) Alternatively, MATLAB scripts can, of course, also be called interactively on the MATLAB GUI's command line. As noted above: In Linux, these shell scripts assume that the command `matlab` is on the shell path.  In macOS, each of these shell scripts defines an alias `matlab` that points to the installed MATLAB version. To adapt this setting to your environment, please edit line 12 in [goparbatch.sh](goparbatch.sh) and [goseqbatch.sh](goseqbatch.sh) as needed.
 
 
 ## List of tables and programs

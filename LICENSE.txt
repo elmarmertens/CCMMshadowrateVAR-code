@@ -2,13 +2,13 @@ LICENSING INFORMATION
 
 - For FRED-MD data as provided in [2022-09.csv](data/2022-09.csv), as obtained from https://www.stlouisfed.org/research/economists/mccracken/fred-databases, see the FRED terms of use at https://fred.stlouisfed.org/terms-of-use.html
 
-- For Wu-Xia shadow-rate estimates as provided in [shadowrate_US.xls]s(data/shadowrate_US.xls) see https://sites.google.com/view/jingcynthiawu/shadow-rates
+- For Wu-Xia shadow-rate estimates as provided in [shadowrate_US.xls](data/shadowrate_US.xls) see https://sites.google.com/view/jingcynthiawu/shadow-rates
 
 - For Leo Krippner's estimates, as provided in [SSR_Estimates_2022March.xlsx](data/SSR_Estimates_2022March.xlsx), a copy of his disclaimer and copyright statement regarding his shadow-rate estimates provided in [SSR_Estimates_2022March.xlsx](data/SSR_Estimates_2022March.xlsx) is provided below
 
-- For toolbox code by one of the authors (Elmar Mertens) and provided in the [matlabtoolbox](matlabtoolbox) folder, see the modified BSD license provided therein.
+- For toolbox code by Elmar Mertens, as provided in the [matlabtoolbox](matlabtoolbox) folder, see the modified BSD license provided therein.
 
-- a modified BSD license for all other code, scripts, programs, and SOFTWARE provided with this repository
+- For all other code, scripts, programs, and SOFTWARE provided with this repository (unless explicitly mentioned in a given file), see the modified BSD license provided below. Code snippets contained Diagnostics.m and DiagnosticsShadowRate.m are based on publicly available code with copyrights indicated in the respective files.
 
 --- 
 Modified BSD License (https://opensource.org/licenses/BSD-3-Clause)
