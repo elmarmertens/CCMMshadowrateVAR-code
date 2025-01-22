@@ -85,7 +85,7 @@ Updated shadow rate estimates from Krippner (2015) and Wu and Xia (2016) were do
 - [x] Random seed is set at line **34 in each of the following programs:** [goVAR.m](goVAR.m), [goVAR200811.m](goVAR200811.m), [goVARshadowrateBlockNonstructural.m](goVARshadowrateBlockNonstructural.m), [goVARshadowrateNonstructural.m](goVARshadowrateNonstructural.m),  [goVARshadowrateGeneral.m](goVARshadowrateGeneral.m), [doVARshadowrateBlockNonstructural.m](doVARshadowrateBlockNonstructural.m), and [doVARshadowrateNonstructural.m](doVARshadowrateNonstructural.m) 
 - [ ] No Pseudo random generator is used in the analysis described here.
 
-Except for [goVAR200811.m](goVAR200811.m), each of the programs listed above executes code in parallel workers using substreams of the global random-generator streams, which is seeded as described above. The substreams are assigned at the following code lines: 
+Except for [goVAR200811.m](goVAR200811.m), each of the programs listed above executes code in parallel workers using substreams of the global random-generator stream, which is seeded as described above. The substreams are assigned at the following code lines: 
 - goVAR.m:260
 - goVAR200811.m:257
 - goVARshadowrateBlockNonstructural.m:276
@@ -131,9 +131,9 @@ Approximate RAM memory needed:
 
 #### Details
 
-The main computational routines were last run on a **32-core Intel virtual client** with Intel(R) Xeon(R) Gold 6248R CPU (3.0 GHz) and **112 GB of RAM** using **MATLAB 2023b**. Computation took about **35 hours**. 
+The main computational routines were last run on a **32-core Intel virtual client** with Intel(R) Xeon(R) Gold 6248R CPU (3.0 GHz), **Windows 11 Enterprise**, and **112 GB of RAM** using **MATLAB 2023b**. Computation took about **35 hours**. 
 
-Auxiliary code to collect MCMC estimates, and produce tables and figures was last run on a **laptop with Apple Silicon chip**  (M1 pro) and **MATLAB 2024b for macOS** with **16GB of RAM**. 
+Auxiliary code to collect MCMC estimates, and produce tables and figures was last run on a **laptop with Apple Silicon chip**  (M1 pro), **macOS Sequoia 15.2**, and **MATLAB 2024b for macOS** with **16GB of RAM**. 
 
 
 
