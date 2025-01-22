@@ -57,10 +57,10 @@ FRED-MD data were downloaded from the [Federal Reserve Bank of St. Louis](https:
 
 - Datafile: [data/2022-09.csv](data/2022-09.csv)
 
-Updated shadow rate estimates from Krippner (2015) and Wu and Xia (2016) were downloaded from the authors websites, but are only used for comparison plots; these data series are not used in our estimation.The data are publicly available, and copies are provided with this replication package. Estimates from Krippner can be downloaded from https://www.ljkmfa.com/visitors/ and are subject to his disclaimer and copyright statements (https://www.ljkmfa.com/disclaimer-copyright/). We use his estimates per March 2022. Updated estimates from Wu and Xia can be downloaded from https://sites.google.com/view/jingcynthiawu/shadow-rates. We use a copy downloaded on September 10, 2022.
+Updated shadow rate estimates from Krippner (2015) and Wu and Xia (2016) were downloaded from the authors websites. These data series are only used for comparison plots, and not in our estimation. The data are publicly available, and copies are provided with this replication package (including copies in non-proprietary format). Estimates from Krippner can be downloaded from https://www.ljkmfa.com/visitors/ and are subject to his disclaimer and copyright statements (https://www.ljkmfa.com/disclaimer-copyright/). We use his estimates from March 2022. Updated estimates from Wu and Xia can be downloaded from https://sites.google.com/view/jingcynthiawu/shadow-rates. We use a copy downloaded on September 10, 2022.
 
-- Datafile: [data/SSR_Estimates_2022March.xlsx](data/SSR_Estimates_2022March.xlsx) for Krippner estimates.
-- Datafile: [data/shadowrate_US.xls](data/shadowrate_US.xls) for Wu-Xia estimates.
+- Datafile for Krippner estimates: [data/SSR_Estimates_2022March.xlsx](data/SSR_Estimates_2022March.xlsx). A copy of the relevant workbook sheet, "D. Monthly average SSR series," in non-proprietary format is provided as well in [data/SSR_Estimates_2022March_MonthlyAverageSSRseries.csv](data/SSR_Estimates_2022March_MonthlyAverageSSRseries.csv)  
+- Datafile for Wu-Xia estimates: [data/shadowrate_US.xls](data/shadowrate_US.xls). A copy in non-proprietary format is provided as well in [data/shadowrate_US.csv](data/shadowrate_US.csv) 
 
 
 
