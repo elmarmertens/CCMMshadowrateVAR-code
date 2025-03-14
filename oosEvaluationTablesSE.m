@@ -26,19 +26,23 @@ addpath matlabtoolbox/emstatespace/
 
 resultsdir = pwd;
 
-doAsterisks = false;
-doBold      = true;
-doFlipOrder = true;
-p           = 12;
-
-titlename = 'oosTripleEvaluationTablesQE';
-initwrap
 
 for DATALABEL = {'fredsxMD20exYield-2022-09', 'fredsxMD20-2022-09'}
 
     datalabel = DATALABEL{:};
 
     %% one wrapper per data choice
+
+    titlename = sprintf('oosTripleEvaluationTablesQEwSE-%s', datalabel);
+    initwrap
+
+
+
+    %% BASELINE p=12
+
+    doBold      = false;
+    doFlipOrder = true;
+    p           = 12;
 
     m0 = 0;
 
@@ -277,9 +281,9 @@ for DATALABEL = {'fredsxMD20exYield-2022-09', 'fredsxMD20-2022-09'}
 
             mae0      = nanmean(maeloss0,3);
             mae1      = nanmean(maeloss1,3);
-            relativeMAE01 = mae1(:,1:Nhorizons) ./ mae0(:,1:Nhorizons); % here: RMAE
+            relativeMAE01 = mae1(:,1:Nhorizons) - mae0(:,1:Nhorizons); % here: RMAE
             mae2      = nanmean(maeloss2,3);
-            relativeMAE02 = mae2(:,1:Nhorizons) ./ mae0(:,1:Nhorizons); % here: RMAE
+            relativeMAE02 = mae2(:,1:Nhorizons) - mae0(:,1:Nhorizons); % here: RMAE
 
             %% CRPS
             losstype0     = sprintf('%scrps', models(m0).fcstType);
@@ -297,9 +301,9 @@ for DATALABEL = {'fredsxMD20exYield-2022-09', 'fredsxMD20-2022-09'}
 
             crps1          = nanmean(crpsloss1,3);
             crps0          = nanmean(crpsloss0,3);
-            relativeCRPS01 = crps1(:,1:Nhorizons) ./ crps0(:,1:Nhorizons); % here: Relative CRPS
+            relativeCRPS01 = crps1(:,1:Nhorizons) - crps0(:,1:Nhorizons); % here: Relative CRPS
             crps2          = nanmean(crpsloss2,3);
-            relativeCRPS02 = crps2(:,1:Nhorizons) ./ crps0(:,1:Nhorizons); % here: Relative CRPS
+            relativeCRPS02 = crps2(:,1:Nhorizons) - crps0(:,1:Nhorizons); % here: Relative CRPS
 
             %% flip order of variables
             if doFlipOrder
@@ -317,7 +321,7 @@ for DATALABEL = {'fredsxMD20exYield-2022-09', 'fredsxMD20-2022-09'}
             end
             %% compare all
             statlabels = {'MAE', 'CRPS'};
-            tabname = sprintf('tripleComparisonQE-%s-%s-vs-%s-vs-%s-%s.tex', models(m0).datalabel, ...
+            tabname = sprintf('tripleComparisonQEwSE-%s-%s-vs-%s-vs-%s-%s.tex', models(m0).datalabel, ...
                 models(m0).shortlabel, models(m1).shortlabel, models(m2).shortlabel, evaltxt);
             tabcaption =  sprintf('%s %s', thisTRIPLETlabel, shortcomparisonNote);
 
@@ -326,17 +330,18 @@ for DATALABEL = {'fredsxMD20exYield-2022-09', 'fredsxMD20-2022-09'}
                 crpsloss0, crpsloss1, relativeCRPS01, crpsloss2, relativeCRPS02, ...
                 models(m0).prettylabel, models(m1).prettylabel, models(m2).prettylabel, ...
                 models(m0).prettyshortlabel, models(m1).prettyshortlabel, models(m2).prettyshortlabel, ...
-                Ylabels, theseHorizons, tabcaption, statlabels, comparisonNote, doAsterisks)
+                Ylabels, theseHorizons, tabcaption, statlabels, comparisonNote)
 
 
         end
 
     end % triplets
+    %% finish wrap
+    finishwrap
 
 end % p
 
 %% finish script
-finishwrap
 finishscript
 
 %% helper function to create tex table
@@ -345,7 +350,7 @@ function compareTriple(tabname, wrap, doBold, ...
     crpsloss0, crpsloss1, relativeCRPS01, crpsloss2, relativeCRPS02, ...
     prettylabel0, prettylabel1, prettylabel2, ...
     ~, prettyshortlabel1, prettyshortlabel2, ...
-    Ylabels, theseHorizons, tabcaption, statlabels, comparisonNote, doAsterisks)
+    Ylabels, theseHorizons, tabcaption, statlabels, comparisonNote)
 
 
 %% parse inputs
@@ -354,22 +359,22 @@ Nhorizons = length(theseHorizons);
 
 %% DM tests
 
-[relativeMAE01, dmMAEtstat1] = dodm(maeloss0, maeloss1, relativeMAE01, theseHorizons);
-[relativeCRPS01, dmCRPStstat1] = dodm(crpsloss0, crpsloss1, relativeCRPS01, theseHorizons);
+[relativeMAE01, dmMAEse1] = dodm(maeloss0, maeloss1, relativeMAE01, theseHorizons);
+[relativeCRPS01, dmCRPSse1] = dodm(crpsloss0, crpsloss1, relativeCRPS01, theseHorizons);
 
-[relativeMAE02, dmMAEtstat2] = dodm(maeloss0, maeloss2, relativeMAE02, theseHorizons);
-[relativeCRPS02, dmCRPStstat2] = dodm(crpsloss0, crpsloss2, relativeCRPS02, theseHorizons);
+[relativeMAE02, dmMAEse2] = dodm(maeloss0, maeloss2, relativeMAE02, theseHorizons);
+[relativeCRPS02, dmCRPSse2] = dodm(crpsloss0, crpsloss2, relativeCRPS02, theseHorizons);
 
 %% set up tab
 if ~isempty(wrap)
     tabdir = wrap.dir;
-    latexwrapper(wrap, 'add', 'sidetab', tabname, tabcaption)
+    latexwrapper(wrap, 'add', 'tab', tabname, tabcaption)
 end
 
 %% tabulate
 fid = fopen(fullfile(tabdir, tabname), 'wt');
 fprintf(fid, '\\begin{center}\n');
-fprintf(fid, '\\begin{tabular}{l%s}\n', repmat('.2', 1, 4 * Nhorizons));
+fprintf(fid, '\\begin{tabular}{p{.8cm}%s}\n', repmat('.1', 1, 4 * Nhorizons));
 fprintf(fid, '\\toprule\n');
 fprintf(fid, ' & \\multicolumn{%d}{c}{%s}  & \\multicolumn{%d}{c}{%s}   \\\\ \\cmidrule(lr){%d-%d}\\cmidrule(lr){%d-%d} \n', ...
     2 * Nhorizons, statlabels{1}, 2 * Nhorizons, statlabels{2}, ...
@@ -401,17 +406,9 @@ for n = 1 : N
     for h = 1 : Nhorizons
         if isfinite(relativeMAE01(n,h))
             if doBold && doColorCode(relativeMAE01(n,h))
-                if doAsterisks
-                    fprintf(fid, '& %s%s ', dcolbf(relativeMAE01(n,h), '%6.2f'), Zstar1(dmMAEtstat1(n,h)));
-                else
-                    fprintf(fid, '& %s ', dcolbf(relativeMAE01(n,h), '%6.2f'));
-                end
+                fprintf(fid, '& %s ', dcolbf(relativeMAE01(n,h), '%6.2f'));
             else
-                if doAsterisks
-                    fprintf(fid, '& %6.2f%s ', relativeMAE01(n,h), Zstar1(dmMAEtstat1(n,h)));
-                else
-                    fprintf(fid, '& %6.2f ', relativeMAE01(n,h));
-                end
+                fprintf(fid, '& %6.2f ', relativeMAE01(n,h));
             end
         else
             fprintf(fid, '& -.- ');
@@ -420,17 +417,9 @@ for n = 1 : N
     for h = 1 : Nhorizons
         if isfinite(relativeMAE02(n,h))
             if doBold && doColorCode(relativeMAE02(n,h))
-                if doAsterisks
-                    fprintf(fid, '& %s%s ', dcolbf(relativeMAE02(n,h), '%6.2f'), Zstar1(dmMAEtstat2(n,h)));
-                else
-                    fprintf(fid, '& %s ', dcolbf(relativeMAE02(n,h), '%6.2f'));
-                end
+                fprintf(fid, '& %s ', dcolbf(relativeMAE02(n,h), '%6.2f'));
             else
-                if doAsterisks
-                    fprintf(fid, '& %6.2f%s ', relativeMAE02(n,h), Zstar1(dmMAEtstat2(n,h)));
-                else
-                    fprintf(fid, '& %6.2f ', relativeMAE02(n,h));
-                end
+                fprintf(fid, '& %6.2f ', relativeMAE02(n,h));
             end
         else
             fprintf(fid, '& -.- ');
@@ -439,17 +428,9 @@ for n = 1 : N
     for h = 1 : Nhorizons
         if isfinite(relativeCRPS01(n,h))
             if doBold && doColorCode(relativeCRPS01(n,h))
-                if doAsterisks
-                    fprintf(fid, '& %s%s ', dcolbf(relativeCRPS01(n,h), '%6.2f'), Zstar1(dmCRPStstat1(n,h)));
-                else
-                    fprintf(fid, '& %s ', dcolbf(relativeCRPS01(n,h), '%6.2f'));
-                end
+                fprintf(fid, '& %s ', dcolbf(relativeCRPS01(n,h), '%6.2f'));
             else
-                if doAsterisks
-                    fprintf(fid, '& %6.2f%s ', relativeCRPS01(n,h), Zstar1(dmCRPStstat1(n,h)));
-                else
-                    fprintf(fid, '& %6.2f ', relativeCRPS01(n,h));
-                end
+                fprintf(fid, '& %6.2f ', relativeCRPS01(n,h));
             end
         else
             fprintf(fid, '& -.- ');
@@ -458,62 +439,63 @@ for n = 1 : N
     for h = 1 : Nhorizons
         if isfinite(relativeCRPS02(n,h))
             if doBold && doColorCode(relativeCRPS02(n,h))
-                if doAsterisks
-                    fprintf(fid, '& %s%s ', dcolbf(relativeCRPS02(n,h), '%6.2f'), Zstar1(dmCRPStstat2(n,h)));
-                else
-                    fprintf(fid, '& %s ', dcolbf(relativeCRPS02(n,h), '%6.2f'));
-                end
+                fprintf(fid, '& %s ', dcolbf(relativeCRPS02(n,h), '%6.2f'));
             else
-                if doAsterisks
-                    fprintf(fid, '& %6.2f%s ', relativeCRPS02(n,h), Zstar1(dmCRPStstat2(n,h)));
-                else
-                    fprintf(fid, '& %6.2f ', relativeCRPS02(n,h));
-                end
+                fprintf(fid, '& %6.2f ', relativeCRPS02(n,h));
             end
         else
             fprintf(fid, '& -.- ');
         end
     end
     fprintf(fid, '\\\\\n');
-
+    % add rows of standard errors
+    for h = 1 : Nhorizons
+        if isfinite(relativeMAE01(n,h))
+            fprintf(fid, '& (%6.2f) ', dmMAEse1(n,h));
+        else
+            fprintf(fid, '&');
+        end
+    end
+    for h = 1 : Nhorizons
+        if isfinite(relativeMAE02(n,h))
+            fprintf(fid, '& (%6.2f) ', dmMAEse2(n,h));
+        else
+            fprintf(fid, '&');
+        end
+    end
+    for h = 1 : Nhorizons
+        if isfinite(relativeCRPS01(n,h))
+            fprintf(fid, '& (%6.2f) ', dmCRPSse1(n,h));
+        else
+            fprintf(fid, '&');
+        end
+    end
+    for h = 1 : Nhorizons
+        if isfinite(relativeCRPS02(n,h))
+            fprintf(fid, '& (%6.2f) ', dmCRPSse2(n,h));
+        else
+            fprintf(fid, '&');
+        end
+    end
+    fprintf(fid, '\\\\\n');
 end
 fprintf(fid, '\\bottomrule\n');
 fprintf(fid, '\\end{tabular}\n');
 fprintf(fid, '\\end{center}\n');
 fprintf(fid, '\n');
 
-sigone = cat(1, abs(dmMAEtstat1) > norminv(0.95, 0, 1) & (round(relativeMAE01,2) == 1), ...
-    abs(dmCRPStstat1) > norminv(0.95, 0, 1) & (round(relativeCRPS01,2) == 1));
+% sigone = cat(1, abs(dmMAEtstat1) > norminv(0.95, 0, 1) & (round(relativeMAE01,2) == 1), ...
+    % abs(dmCRPStstat1) > norminv(0.95, 0, 1) & (round(relativeCRPS01,2) == 1));
 
 fprintf(fid, '\\legend{\n');
-fprintf(fid, 'Comparison of %s and %s against %s (baseline, in denominator) for horizons', ...
+fprintf(fid, 'Comparison of %s and %s against %s for horizons', ...
     prettylabel1, prettylabel2, prettylabel0);
 fprintf(fid, ' %d, ', theseHorizons(1:end-1));
 fprintf(fid, 'and %d.\n', theseHorizons(end));
-fprintf(fid, 'Values below 1 indicate improvement over baseline. \n');
+fprintf(fid, 'Differences in MAE and average CRPS for shadow-rate VARs less %s (so negative entries indicate superiority of shadow-rate VARs).\n', prettylabel0);
 fprintf(fid, '%s \n', comparisonNote);
 
-if doAsterisks
-    fprintf(fid, 'Significance assessed by Diebold-Mariano-West test using Newey-West standard errors with $h + 1$ lags, and stars indicating $p$ values of 10\\%% and below.\n');
-
-    if any(sigone, 'all')
-        if sum(sigone(:)) > 1
-            fprintf(fid, 'Due to the close behavior of some of the models compared, and rounding of the reported values, a few comparisons show significant ratios  of 1.00.\n');
-            fprintf(fid, 'These cases arise from persistent differences in performance that are, however, too small to be relevant after rounding.\n');
-        else
-            fprintf(fid, 'Due to the close behavior of some of the models compared, and rounding of the reported values, one of the comparisons shows a significant ratio of 1.00.\n');
-            fprintf(fid, 'This case arises from persistent differences in performance that are, however, too small to be relevant after rounding.\n');
-        end
-    end
-end
-
-if doBold
-    fprintf(fid, 'Relative differences of 5 percent and more (compared to baseline) are indicated by bold face numbers.\n');
-end
-
-if ~all(isfinite(relativeMAE01(:)))
-    fprintf(fid, 'In some cases, due to strong performance of the baseline model, relative MAE may involve divisions by zero. These cases are reported as blank entries.\n');
-end
+fprintf(fid, 'Under each estimate, numbers in parentheses indicate the standard errors of a Diebold-Mariano-West test (Newey-West with $h + 1$ lags).\n');
 fprintf(fid, '}\n'); % close legend
 
 fclose(fid);
@@ -522,19 +504,11 @@ type(fullfile(tabdir, tabname))
 
 end
 
-function flag = doColorCode(x)
-
-if round(x,2) >= 1.05
-    flag = 1;
-elseif round(x,2) <= .95
-    flag = -1;
-else
-    flag = 0;
+function flag = doColorCode(~) % legacy function
+    flag = 0; 
 end
 
-end % function
-
-function [deltaLoss, tstat] = dodm(loss0, loss1, deltaLoss, theseHorizons)
+function [deltaLoss, standarderror] = dodm(loss0, loss1, deltaLoss, theseHorizons)
 
 loss0 = loss0(:,theseHorizons,:);
 loss1 = loss1(:,theseHorizons,:);
@@ -542,7 +516,7 @@ deltaLoss = deltaLoss(:,theseHorizons);
 
 [N, Nhorizons,~] = size(loss0);
 
-tstat = NaN(N,Nhorizons);
+standarderror = NaN(N,Nhorizons);
 
 for h = 1 : Nhorizons
     nwLag = theseHorizons(h) + 1;
@@ -553,7 +527,7 @@ for h = 1 : Nhorizons
         if isequaln(thisloss0, thisloss1) || any(isinf(thisloss0)) || any(isinf(thisloss1))
             % do nothing
         else
-            [~,tstat(n,h)] = dmtest(thisloss0,thisloss1, nwLag);
+            [~,~,~,standarderror(n,h)] = dmtest(thisloss0,thisloss1, nwLag);
         end
     end
 end

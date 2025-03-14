@@ -25,15 +25,15 @@ for n = 1 : length(ncode)
         case 'UNRATE'
             pcode{n} = 'Unemp';
         case 'PAYEMS'
-            pcode{n} = 'Nfm Pyr';
+            pcode{n} = 'Nfm~Pyr';
         case 'CES0600000007'
             pcode{n} = 'Hours';
         case 'CES0600000008'
-            pcode{n} = 'H. Earn';
+            pcode{n} = 'H.~Earn';
         case 'WPSFD49207'
-            pcode{n} = 'PPI Fin';
+            pcode{n} = 'PPI~Fin';
         case 'PPICMM'
-            pcode{n} = 'PPI Met';
+            pcode{n} = 'PPI~Met';
         case 'DSERRA3M086SBEA'
             pcode{n} = 'PCE Services Cons.';
         case 'DSERRG3M086SBEA'
@@ -49,27 +49,27 @@ for n = 1 : length(ncode)
         case {'WUXIASHADOWRATE', 'KRIPPNERSHADOWRATE'}
             pcode{n} = 'Policy Rate';
         case 'TB3MS'
-            pcode{n} = '3m T-Bill';
+            pcode{n} = '3m~T-Bill';
         case 'HOUST'
-            pcode{n} = 'Hsng St';
+            pcode{n} = 'Hsng~St';
         case {'S_P500', 'SP500'}
             pcode{n} = 'S\&P500';
         case 'EXUSUKx'
-            pcode{n} = 'FX \$/\pounds';
+            pcode{n} = 'FX~\$/\pounds';
         case 'TB6MS'
             pcode{n} = '6m Tsy';
         case 'BAA'
             pcode{n} = 'BAA';
         case 'GS1'
-            pcode{n} = '1y Tsy';
+            pcode{n} = '1y~Tsy';
         case 'GS5'
-            pcode{n} = '5y Tsy';
+            pcode{n} = '5y~Tsy';
         case 'GS10'
-            pcode{n} = '10y Tsy';
+            pcode{n} = '10y~Tsy';
         case 'GS20'
-            pcode{n} = '20y Tsy';
+            pcode{n} = '20y~Tsy';
         case 'BAAFFM'
-            pcode{n} = 'Baa Sprd';
+            pcode{n} = 'Baa~Sprd';
         case 'EXCESSBONDPREMIUM'
             pcode{n} = 'EBP';
 
