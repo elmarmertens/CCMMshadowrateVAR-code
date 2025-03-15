@@ -39,7 +39,7 @@ for n = 1 : length(ncode)
         case 'DSERRG3M086SBEA'
             pcode{n} = 'PCE Services Prices';
         case 'PCEPI'
-            pcode{n} = 'PCE Prices';
+            pcode{n} = 'PCE Inflation';
         case 'PCEPILFE'
             pcode{n} = 'PCE Core Prices';
         case 'CPIAUCSL'
@@ -57,17 +57,17 @@ for n = 1 : length(ncode)
         case 'EXUSUKx'
             pcode{n} = 'USD / GBP';
         case 'TB6MS'
-            pcode{n} = '6m Tbill';
+            pcode{n} = '6m~Tbill';
         case 'BAA'
-            pcode{n} = 'BAA Yld';
+            pcode{n} = 'BAA~Yld';
         case 'GS1'
-            pcode{n} = '1y Trsy';
+            pcode{n} = '1y~Trsy';
         case 'GS5'
-            pcode{n} = '5y Trsy';
+            pcode{n} = '5y~Trsy';
         case 'GS10'
-            pcode{n} = '10y Trsy';
+            pcode{n} = '10y~Trsy';
         case 'GS20'
-            pcode{n} = '20y Trsy';
+            pcode{n} = '20y~Trsy';
         case 'BAAFFM'
             pcode{n} = 'Baa Sprd';
         case 'EXCESSBONDPREMIUM'

@@ -39,7 +39,7 @@ for n = 1 : length(ncode)
         case 'DSERRG3M086SBEA'
             pcode{n} = 'PCE Services Prices';
         case 'PCEPI'
-            pcode{n} = 'PCE Inf';
+            pcode{n} = 'Inflation';
         case 'PCEPILFE'
             pcode{n} = 'PCE Core Prices';
         case 'CPIAUCSL'
@@ -57,7 +57,7 @@ for n = 1 : length(ncode)
         case 'EXUSUKx'
             pcode{n} = 'FX~\$/\pounds';
         case 'TB6MS'
-            pcode{n} = '6m Tsy';
+            pcode{n} = '6m~Tsy';
         case 'BAA'
             pcode{n} = 'BAA';
         case 'GS1'
